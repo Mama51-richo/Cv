@@ -4,220 +4,57 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CV Maker Pro · Telegram Mini App</title>
-  <!-- Font Awesome (icons) -->
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- html2pdf (for PDF export) -->
+  <!-- html2pdf -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
-    }
-    body {
-      background: #eef3fa;
-      display: flex;
-      justify-content: center;
-      padding: 16px 10px 40px;
-      min-height: 100vh;
-    }
-    .app-container {
-      max-width: 480px;
-      width: 100%;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, system-ui, sans-serif; }
+    body { background: #eef3fa; display: flex; justify-content: center; padding: 16px 10px 40px; min-height: 100vh; }
+    .app-container { max-width: 480px; width: 100%; }
+
     /* header */
-    .app-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: white;
-      padding: 12px 18px;
-      border-radius: 30px;
-      box-shadow: 0 6px 16px rgba(0,20,40,0.06);
-      margin-bottom: 18px;
-    }
-    .app-header h1 {
-      font-size: 1.4rem;
-      font-weight: 700;
-      background: linear-gradient(145deg, #0b2b5c, #1a4b8a);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -0.3px;
-    }
-    .app-header i {
-      font-size: 1.6rem;
-      color: #1a4b8a;
-      background: #e9eff8;
-      padding: 8px 10px;
-      border-radius: 40px;
-    }
-    /* layout switcher */
-    .layout-switcher {
-      display: flex;
-      gap: 8px;
-      background: white;
-      padding: 8px 14px;
-      border-radius: 40px;
-      margin-bottom: 16px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    .layout-btn {
-      background: transparent;
-      border: none;
-      padding: 6px 16px;
-      border-radius: 30px;
-      font-weight: 600;
-      font-size: 0.8rem;
-      color: #2c3e66;
-      transition: 0.2s;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: #f0f5fe;
-    }
-    .layout-btn i { font-size: 0.8rem; }
-    .layout-btn.active {
-      background: #1a4b8a;
-      color: white;
-      box-shadow: 0 4px 10px rgba(26,75,138,0.25);
-    }
+    .app-header { display: flex; align-items: center; justify-content: space-between; background: white; padding: 12px 18px; border-radius: 30px; box-shadow: 0 6px 16px rgba(0,20,40,0.06); margin-bottom: 16px; }
+    .app-header h1 { font-size: 1.4rem; font-weight: 700; background: linear-gradient(145deg, #0b2b5c, #1a4b8a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .app-header i { font-size: 1.6rem; color: #1a4b8a; background: #e9eff8; padding: 8px 10px; border-radius: 40px; }
+
+    /* template & layout switcher */
+    .switcher-bar { display: flex; gap: 6px; background: white; padding: 8px 12px; border-radius: 40px; margin-bottom: 12px; flex-wrap: wrap; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+    .switcher-btn { background: transparent; border: none; padding: 5px 14px; border-radius: 30px; font-weight: 600; font-size: 0.75rem; color: #2c3e66; transition: 0.2s; cursor: pointer; display: flex; align-items: center; gap: 4px; background: #f0f5fe; }
+    .switcher-btn i { font-size: 0.75rem; }
+    .switcher-btn.active { background: #1a4b8a; color: white; box-shadow: 0 4px 10px rgba(26,75,138,0.25); }
+
+    /* upload area */
+    .upload-area { background: white; border-radius: 30px; padding: 10px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+    .upload-area label { font-weight: 600; font-size: 0.8rem; color: #1f2a44; }
+    .upload-area input[type="file"] { font-size: 0.75rem; max-width: 180px; }
+    .upload-area .file-status { font-size: 0.7rem; color: #3a5a7a; }
+
     /* category tabs */
-    .category-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 16px;
-      background: white;
-      padding: 10px 12px;
-      border-radius: 40px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-      justify-content: center;
-    }
-    .category-btn {
-      background: transparent;
-      border: none;
-      padding: 6px 14px;
-      border-radius: 40px;
-      font-weight: 500;
-      font-size: 0.78rem;
-      color: #2c3e66;
-      transition: 0.2s;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      white-space: nowrap;
-    }
-    .category-btn i { font-size: 0.8rem; opacity: 0.7; }
-    .category-btn.active {
-      background: #1a4b8a;
-      color: white;
-      box-shadow: 0 4px 10px rgba(26,75,138,0.2);
-    }
+    .category-tabs { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; background: white; padding: 8px 10px; border-radius: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); justify-content: center; }
+    .category-btn { background: transparent; border: none; padding: 5px 12px; border-radius: 40px; font-weight: 500; font-size: 0.72rem; color: #2c3e66; transition: 0.2s; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+    .category-btn i { font-size: 0.7rem; opacity: 0.7; }
+    .category-btn.active { background: #1a4b8a; color: white; box-shadow: 0 4px 10px rgba(26,75,138,0.2); }
     .category-btn.active i { opacity: 1; }
+
     /* main card */
-    .cv-card {
-      background: white;
-      border-radius: 28px;
-      box-shadow: 0 16px 36px -10px rgba(0,20,40,0.15);
-      padding: 20px 16px;
-      transition: 0.2s;
-    }
-    .cv-section {
-      display: none;
-      animation: fade 0.2s ease;
-    }
-    .cv-section.active-section {
-      display: block;
-    }
-    @keyframes fade {
-      0% { opacity: 0.5; transform: translateY(6px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-    .field-group {
-      margin-bottom: 16px;
-    }
-    .field-group label {
-      display: block;
-      font-weight: 600;
-      color: #1f2a44;
-      margin-bottom: 5px;
-      font-size: 0.82rem;
-      letter-spacing: 0.2px;
-    }
-    .field-group input, .field-group textarea {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1.5px solid #e2e9f2;
-      border-radius: 16px;
-      font-size: 0.9rem;
-      transition: 0.15s;
-      background: #fafcff;
-      outline: none;
-    }
-    .field-group input:focus, .field-group textarea:focus {
-      border-color: #1a4b8a;
-      box-shadow: 0 0 0 4px rgba(26,75,138,0.08);
-      background: white;
-    }
-    .field-group textarea {
-      resize: vertical;
-      min-height: 70px;
-    }
-    .row-2col {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    .inline-icon {
-      margin-right: 6px;
-      color: #1a4b8a;
-      width: 18px;
-    }
-    .helper-note {
-      font-size: 0.7rem;
-      color: #6a7b9c;
-      margin-top: 3px;
-      padding-left: 6px;
-    }
-    /* action buttons */
-    .action-bar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-top: 24px;
-      padding-top: 16px;
-      border-top: 2px solid #eef4fa;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 10px 18px;
-      border-radius: 60px;
-      font-weight: 600;
-      font-size: 0.85rem;
-      border: none;
-      background: #eef4fa;
-      color: #1f2a44;
-      cursor: pointer;
-      transition: 0.15s;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-      flex: 1 1 auto;
-      justify-content: center;
-    }
-    .btn-primary {
-      background: #1a4b8a;
-      color: white;
-      box-shadow: 0 6px 14px -4px rgba(26,75,138,0.3);
-    }
+    .cv-card { background: white; border-radius: 28px; box-shadow: 0 16px 36px -10px rgba(0,20,40,0.15); padding: 18px 14px; transition: 0.2s; }
+    .cv-section { display: none; animation: fade 0.2s ease; }
+    .cv-section.active-section { display: block; }
+    @keyframes fade { 0% { opacity: 0.5; transform: translateY(6px); } 100% { opacity: 1; transform: translateY(0); } }
+
+    .field-group { margin-bottom: 14px; }
+    .field-group label { display: block; font-weight: 600; color: #1f2a44; margin-bottom: 4px; font-size: 0.78rem; }
+    .field-group input, .field-group textarea { width: 100%; padding: 9px 14px; border: 1.5px solid #e2e9f2; border-radius: 16px; font-size: 0.85rem; transition: 0.15s; background: #fafcff; outline: none; }
+    .field-group input:focus, .field-group textarea:focus { border-color: #1a4b8a; box-shadow: 0 0 0 4px rgba(26,75,138,0.08); background: white; }
+    .field-group textarea { resize: vertical; min-height: 60px; }
+    .row-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .inline-icon { margin-right: 5px; color: #1a4b8a; width: 16px; }
+
+    /* action bar */
+    .action-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; padding-top: 14px; border-top: 2px solid #eef4fa; }
+    .btn { display: inline-flex; align-items: center; gap: 5px; padding: 8px 14px; border-radius: 60px; font-weight: 600; font-size: 0.8rem; border: none; background: #eef4fa; color: #1f2a44; cursor: pointer; transition: 0.15s; box-shadow: 0 2px 6px rgba(0,0,0,0.02); flex: 1 1 auto; justify-content: center; }
+    .btn-primary { background: #1a4b8a; color: white; box-shadow: 0 6px 14px -4px rgba(26,75,138,0.3); }
     .btn-primary i { color: white; }
     .btn-primary:hover { background: #0f3a6e; transform: scale(0.97); }
     .btn-outline { background: transparent; border: 2px solid #d0dcee; }
@@ -225,136 +62,32 @@
     .btn-success { background: #1f8b4c; color: white; }
     .btn-success i { color: white; }
     .btn-success:hover { background: #15733e; }
-    .btn-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      width: 100%;
-    }
-    .btn-group .btn { flex: 1 1 40%; }
-    /* hidden preview container for A4 generation */
-    #cv-preview-container {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.3);
-      backdrop-filter: blur(2px);
-      z-index: 999;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-    #cv-preview-content {
-      background: white;
-      max-width: 900px;
-      width: 100%;
-      margin: auto;
-      border-radius: 20px;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.3);
-      overflow: auto;
-      max-height: 90vh;
-      padding: 0;
-    }
-    #cv-preview-content > div {
-      padding: 30px 28px;
-    }
-    .preview-close {
-      position: sticky;
-      top: 0;
-      background: white;
-      padding: 12px 20px;
-      border-bottom: 1px solid #eef4fa;
-      display: flex;
-      justify-content: flex-end;
-      z-index: 10;
-    }
-    .preview-close button {
-      background: #f0f4fc;
-      border: none;
-      padding: 8px 18px;
-      border-radius: 40px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    /* responsive */
-    @media (max-width: 480px) {
-      .row-2col { grid-template-columns: 1fr; gap: 8px; }
-      .app-header h1 { font-size: 1.2rem; }
-      .category-btn { font-size: 0.7rem; padding: 5px 10px; }
-      .layout-btn { font-size: 0.7rem; padding: 4px 12px; }
-      .cv-card { padding: 16px 12px; }
-      .btn { font-size: 0.8rem; padding: 8px 12px; }
-    }
-    /* A4 print style (hidden by default, used for preview) */
-    .a4-page {
-      background: white;
-      padding: 40px 36px;
-      max-width: 100%;
-      margin: 0 auto;
-      font-family: 'Segoe UI', Roboto, sans-serif;
-      color: #1e2a41;
-      position: relative;
-    }
-    .a4-header {
-      border-bottom: 3px solid #1a4b8a;
-      padding-bottom: 12px;
-      margin-bottom: 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      flex-wrap: wrap;
-    }
-    .a4-header h1 {
-      font-size: 2.2rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      margin: 0;
-    }
-    .a4-header .contact-info {
-      font-size: 0.85rem;
-      color: #2c4270;
-      text-align: right;
-    }
-    .a4-header .contact-info span { display: inline-block; margin-left: 12px; }
-    .a4-footer {
-      margin-top: 28px;
-      border-top: 1px solid #dce5f0;
-      padding-top: 14px;
-      font-size: 0.7rem;
-      color: #6f7e9e;
-      text-align: center;
-    }
-    .a4-section-title {
-      font-weight: 600;
-      color: #0e2b50;
-      border-left: 5px solid #1a4b8a;
-      padding-left: 12px;
-      margin: 18px 0 8px 0;
-      font-size: 1.1rem;
-    }
-    .a4-experience-item { margin-bottom: 10px; }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
+    .btn-group .btn { flex: 1 1 30%; }
+
+    /* preview overlay */
+    #cv-preview-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); backdrop-filter: blur(2px); z-index: 999; justify-content: center; align-items: center; padding: 16px; }
+    #cv-preview-content { background: white; max-width: 900px; width: 100%; border-radius: 20px; box-shadow: 0 30px 60px rgba(0,0,0,0.3); overflow: auto; max-height: 90vh; }
+    #cv-preview-content > div { padding: 28px 24px; }
+    .preview-close { position: sticky; top: 0; background: white; padding: 10px 18px; border-bottom: 1px solid #eef4fa; display: flex; justify-content: flex-end; z-index: 10; }
+    .preview-close button { background: #f0f4fc; border: none; padding: 6px 16px; border-radius: 40px; font-weight: 600; cursor: pointer; }
+
+    /* A4 page style */
+    .a4-page { background: white; padding: 32px 28px; max-width: 100%; margin: 0 auto; font-family: 'Segoe UI', Roboto, sans-serif; color: #1e2a41; position: relative; }
+    .a4-header { border-bottom: 3px solid #1a4b8a; padding-bottom: 10px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; }
+    .a4-header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; margin: 0; }
+    .a4-header .contact-info { font-size: 0.8rem; color: #2c4270; text-align: right; }
+    .a4-header .contact-info span { display: inline-block; margin-left: 10px; }
+    .a4-footer { margin-top: 24px; border-top: 1px solid #dce5f0; padding-top: 12px; font-size: 0.65rem; color: #6f7e9e; text-align: center; }
+    .a4-section-title { font-weight: 600; color: #0e2b50; border-left: 5px solid #1a4b8a; padding-left: 10px; margin: 14px 0 6px 0; font-size: 1rem; }
+    .a4-experience-item { margin-bottom: 8px; }
     .a4-experience-item .title { font-weight: 600; }
     .a4-experience-item .meta { float: right; color: #3a507a; }
-    .a4-skill-tag {
-      display: inline-block;
-      background: #eaf0f8;
-      padding: 2px 12px;
-      border-radius: 30px;
-      margin: 3px 4px 3px 0;
-      font-size: 0.8rem;
-    }
-    /* two column layout variant */
-    .a4-two-col {
-      display: grid;
-      grid-template-columns: 1fr 2fr;
-      gap: 28px;
-    }
-    .a4-two-col .left-col { border-right: 1px solid #e2eaf5; padding-right: 20px; }
+    .a4-two-col { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; }
+    .a4-two-col .left-col { border-right: 1px solid #e2eaf5; padding-right: 18px; }
     .a4-two-col .right-col { padding-left: 4px; }
-    @media (max-width: 600px) {
-      .a4-two-col { grid-template-columns: 1fr; gap: 6px; }
-      .a4-two-col .left-col { border-right: none; padding-right: 0; }
-    }
+    @media (max-width: 600px) { .a4-two-col { grid-template-columns: 1fr; gap: 6px; } .a4-two-col .left-col { border-right: none; padding-right: 0; } }
+    @media (max-width: 480px) { .row-2col { grid-template-columns: 1fr; gap: 6px; } .app-header h1 { font-size: 1.1rem; } .category-btn { font-size: 0.65rem; padding: 4px 8px; } .switcher-btn { font-size: 0.65rem; padding: 4px 10px; } .cv-card { padding: 14px 10px; } .btn { font-size: 0.7rem; padding: 6px 10px; } }
   </style>
 </head>
 <body>
@@ -362,15 +95,24 @@
 
   <!-- header -->
   <div class="app-header">
-    <h1><i class="fas fa-file-alt" style="background: none; padding: 0; color: #1a4b8a; margin-right: 8px;"></i>CV Maker</h1>
+    <h1><i class="fas fa-file-alt" style="background:none;padding:0;color:#1a4b8a;margin-right:6px;"></i>CV Maker</h1>
     <i class="fas fa-pen-fancy"></i>
   </div>
 
-  <!-- layout switcher -->
-  <div class="layout-switcher">
-    <button class="layout-btn active" data-layout="classic"><i class="fas fa-columns"></i> Classic</button>
-    <button class="layout-btn" data-layout="modern"><i class="fas fa-layer-group"></i> Modern</button>
-    <button class="layout-btn" data-layout="compact"><i class="fas fa-compress-alt"></i> Compact</button>
+  <!-- template + layout switcher -->
+  <div class="switcher-bar">
+    <button class="switcher-btn active" data-template="classic"><i class="fas fa-columns"></i> Classic</button>
+    <button class="switcher-btn" data-template="modern"><i class="fas fa-layer-group"></i> Modern</button>
+    <button class="switcher-btn" data-template="compact"><i class="fas fa-compress-alt"></i> Compact</button>
+    <button class="switcher-btn" data-template="elegant"><i class="fas fa-crown"></i> Elegant</button>
+  </div>
+
+  <!-- upload area -->
+  <div class="upload-area">
+    <label><i class="fas fa-upload"></i> Upload CV</label>
+    <input type="file" id="cvUpload" accept=".json,.txt">
+    <span class="file-status" id="uploadStatus">No file</span>
+    <button class="btn btn-outline" id="applyUploadBtn" style="padding:4px 14px;font-size:0.7rem;"><i class="fas fa-check"></i> Apply</button>
   </div>
 
   <!-- category tabs -->
@@ -387,127 +129,58 @@
   <div class="cv-card" id="cvCard">
     <!-- PERSONAL -->
     <div class="cv-section active-section" id="section-personal">
-      <div class="field-group">
-        <label><i class="fas fa-user-circle inline-icon"></i> Full Name</label>
-        <input type="text" id="fullName" placeholder="e.g. Alex Johnson" value="Alexandra Rivera">
-      </div>
+      <div class="field-group"><label><i class="fas fa-user-circle inline-icon"></i> Full Name</label><input type="text" id="fullName" placeholder="Full Name" value="Alexandra Rivera"></div>
       <div class="row-2col">
-        <div class="field-group">
-          <label><i class="fas fa-envelope inline-icon"></i> Email</label>
-          <input type="email" id="email" placeholder="name@domain.com" value="alex.r@example.com">
-        </div>
-        <div class="field-group">
-          <label><i class="fas fa-phone-alt inline-icon"></i> Phone</label>
-          <input type="text" id="phone" placeholder="+1 234 567 890" value="+1 555 123 4567">
-        </div>
+        <div class="field-group"><label><i class="fas fa-envelope inline-icon"></i> Email</label><input type="email" id="email" placeholder="email@domain.com" value="alex.r@example.com"></div>
+        <div class="field-group"><label><i class="fas fa-phone-alt inline-icon"></i> Phone</label><input type="text" id="phone" placeholder="+1 234 567 890" value="+1 555 123 4567"></div>
       </div>
-      <div class="field-group">
-        <label><i class="fas fa-map-marker-alt inline-icon"></i> Address</label>
-        <input type="text" id="address" placeholder="City, Country" value="San Francisco, CA">
-      </div>
-      <div class="field-group">
-        <label><i class="fas fa-link inline-icon"></i> LinkedIn / Portfolio</label>
-        <input type="text" id="linkedin" placeholder="linkedin.com/in/yourprofile" value="linkedin.com/in/alexrivera">
-      </div>
+      <div class="field-group"><label><i class="fas fa-map-marker-alt inline-icon"></i> Address</label><input type="text" id="address" placeholder="City, Country" value="San Francisco, CA"></div>
+      <div class="field-group"><label><i class="fas fa-link inline-icon"></i> LinkedIn / Portfolio</label><input type="text" id="linkedin" placeholder="linkedin.com/in/yourprofile" value="linkedin.com/in/alexrivera"></div>
     </div>
 
     <!-- SUMMARY -->
     <div class="cv-section" id="section-summary">
-      <div class="field-group">
-        <label><i class="fas fa-quote-right inline-icon"></i> Professional Summary</label>
-        <textarea id="summary" rows="4" placeholder="Write a compelling summary…">Creative marketing specialist with 6+ years of experience in brand strategy and digital campaigns. Proven track record of driving engagement and leading cross-functional teams.</textarea>
-      </div>
+      <div class="field-group"><label><i class="fas fa-quote-right inline-icon"></i> Professional Summary</label><textarea id="summary" rows="4" placeholder="Write a compelling summary…">Creative marketing specialist with 6+ years of experience in brand strategy and digital campaigns. Proven track record of driving engagement and leading cross-functional teams.</textarea></div>
     </div>
 
     <!-- EXPERIENCE -->
     <div class="cv-section" id="section-experience">
-      <div class="field-group">
-        <label><i class="fas fa-building inline-icon"></i> Experience 1 – Job Title</label>
-        <input type="text" id="exp1Title" placeholder="e.g. Senior Marketing Manager" value="Marketing Lead">
-      </div>
+      <div class="field-group"><label><i class="fas fa-building inline-icon"></i> Experience 1 – Job Title</label><input type="text" id="exp1Title" placeholder="Job Title" value="Marketing Lead"></div>
       <div class="row-2col">
-        <div class="field-group">
-          <label>Company</label>
-          <input type="text" id="exp1Company" placeholder="Company name" value="BrandBoost Inc.">
-        </div>
-        <div class="field-group">
-          <label>Year (start – end)</label>
-          <input type="text" id="exp1Year" placeholder="2020 – 2023" value="2021 – Present">
-        </div>
+        <div class="field-group"><label>Company</label><input type="text" id="exp1Company" placeholder="Company" value="BrandBoost Inc."></div>
+        <div class="field-group"><label>Year</label><input type="text" id="exp1Year" placeholder="2020 – 2023" value="2021 – Present"></div>
       </div>
-      <div class="field-group">
-        <label>Key responsibilities</label>
-        <textarea id="exp1Desc" rows="3" placeholder="Describe your role…">Led a team of 10, increased organic reach by 40%, managed $2M budget.</textarea>
-      </div>
-      <hr style="margin: 16px 0; border: 1px dashed #dfe8f2;">
-      <div class="field-group">
-        <label><i class="fas fa-building inline-icon"></i> Experience 2 – Job Title</label>
-        <input type="text" id="exp2Title" placeholder="e.g. Junior Analyst" value="Marketing Coordinator">
-      </div>
+      <div class="field-group"><label>Responsibilities</label><textarea id="exp1Desc" rows="2" placeholder="Describe your role…">Led a team of 10, increased organic reach by 40%, managed $2M budget.</textarea></div>
+      <hr style="margin:12px 0;border:1px dashed #dfe8f2;">
+      <div class="field-group"><label><i class="fas fa-building inline-icon"></i> Experience 2 – Job Title</label><input type="text" id="exp2Title" placeholder="Job Title" value="Marketing Coordinator"></div>
       <div class="row-2col">
-        <div class="field-group">
-          <label>Company</label>
-          <input type="text" id="exp2Company" placeholder="Company name" value="DigitalWave">
-        </div>
-        <div class="field-group">
-          <label>Year</label>
-          <input type="text" id="exp2Year" placeholder="2018 – 2020" value="2019 – 2021">
-        </div>
+        <div class="field-group"><label>Company</label><input type="text" id="exp2Company" placeholder="Company" value="DigitalWave"></div>
+        <div class="field-group"><label>Year</label><input type="text" id="exp2Year" placeholder="2018 – 2020" value="2019 – 2021"></div>
       </div>
-      <div class="field-group">
-        <label>Responsibilities</label>
-        <textarea id="exp2Desc" rows="3" placeholder="Describe your role…">Managed social media, coordinated events, and analyzed campaign data.</textarea>
-      </div>
+      <div class="field-group"><label>Responsibilities</label><textarea id="exp2Desc" rows="2" placeholder="Describe your role…">Managed social media, coordinated events, and analyzed campaign data.</textarea></div>
     </div>
 
     <!-- EDUCATION -->
     <div class="cv-section" id="section-education">
-      <div class="field-group">
-        <label><i class="fas fa-university inline-icon"></i> Degree / Major</label>
-        <input type="text" id="eduDegree" placeholder="e.g. B.S. Marketing" value="B.A. Communications">
-      </div>
+      <div class="field-group"><label><i class="fas fa-university inline-icon"></i> Degree / Major</label><input type="text" id="eduDegree" placeholder="Degree" value="B.A. Communications"></div>
       <div class="row-2col">
-        <div class="field-group">
-          <label>Institution</label>
-          <input type="text" id="eduInstitution" placeholder="University name" value="Stanford University">
-        </div>
-        <div class="field-group">
-          <label>Year</label>
-          <input type="text" id="eduYear" placeholder="Graduation year" value="2018">
-        </div>
+        <div class="field-group"><label>Institution</label><input type="text" id="eduInstitution" placeholder="University" value="Stanford University"></div>
+        <div class="field-group"><label>Year</label><input type="text" id="eduYear" placeholder="Graduation year" value="2018"></div>
       </div>
-      <div class="field-group">
-        <label>Additional education / certifications</label>
-        <textarea id="eduExtra" rows="2" placeholder="Honors, courses…">Digital Marketing Certificate, Google Analytics</textarea>
-      </div>
+      <div class="field-group"><label>Additional education</label><textarea id="eduExtra" rows="2" placeholder="Honors, courses…">Digital Marketing Certificate, Google Analytics</textarea></div>
     </div>
 
     <!-- SKILLS -->
     <div class="cv-section" id="section-skills">
-      <div class="field-group">
-        <label><i class="fas fa-code inline-icon"></i> Technical Skills</label>
-        <textarea id="techSkills" rows="3" placeholder="e.g. Python, Figma, SEO">Brand Strategy, SEO/SEM, Adobe Creative Suite, Google Analytics</textarea>
-      </div>
-      <div class="field-group">
-        <label><i class="fas fa-users inline-icon"></i> Soft Skills</label>
-        <textarea id="softSkills" rows="2" placeholder="e.g. Leadership, Communication">Leadership, Public Speaking, Cross-functional Collaboration</textarea>
-      </div>
+      <div class="field-group"><label><i class="fas fa-code inline-icon"></i> Technical Skills</label><textarea id="techSkills" rows="2" placeholder="e.g. Python, Figma, SEO">Brand Strategy, SEO/SEM, Adobe Creative Suite, Google Analytics</textarea></div>
+      <div class="field-group"><label><i class="fas fa-users inline-icon"></i> Soft Skills</label><textarea id="softSkills" rows="2" placeholder="e.g. Leadership, Communication">Leadership, Public Speaking, Cross-functional Collaboration</textarea></div>
     </div>
 
     <!-- ADDITIONAL -->
     <div class="cv-section" id="section-additional">
-      <div class="field-group">
-        <label><i class="fas fa-globe inline-icon"></i> Languages</label>
-        <input type="text" id="languages" placeholder="English, Spanish, etc." value="English (native), Spanish (fluent)">
-      </div>
-      <div class="field-group">
-        <label><i class="fas fa-trophy inline-icon"></i> Awards / Certifications</label>
-        <textarea id="awards" rows="2" placeholder="e.g. Employee of the Month">Marketing Excellence Award 2022</textarea>
-      </div>
-      <div class="field-group">
-        <label><i class="fas fa-heart inline-icon"></i> Interests</label>
-        <input type="text" id="interests" placeholder="Hobbies, volunteering…" value="Photography, Volunteering, Chess">
-      </div>
+      <div class="field-group"><label><i class="fas fa-globe inline-icon"></i> Languages</label><input type="text" id="languages" placeholder="English, Spanish" value="English (native), Spanish (fluent)"></div>
+      <div class="field-group"><label><i class="fas fa-trophy inline-icon"></i> Awards / Certifications</label><textarea id="awards" rows="2" placeholder="Awards…">Marketing Excellence Award 2022</textarea></div>
+      <div class="field-group"><label><i class="fas fa-heart inline-icon"></i> Interests</label><input type="text" id="interests" placeholder="Hobbies" value="Photography, Volunteering, Chess"></div>
     </div>
 
     <!-- action bar -->
@@ -517,21 +190,20 @@
         <button class="btn btn-success" id="downloadWordBtn"><i class="fas fa-file-word"></i> Word</button>
         <button class="btn btn-outline" id="previewBtn"><i class="fas fa-eye"></i> Preview</button>
         <button class="btn btn-outline" id="resetBtn"><i class="fas fa-undo-alt"></i> Reset</button>
+        <button class="btn btn-outline" id="saveTemplateBtn"><i class="fas fa-save"></i> Save JSON</button>
       </div>
     </div>
   </div>
 
-  <!-- hidden preview container (A4 overlay) -->
+  <!-- preview overlay -->
   <div id="cv-preview-container">
     <div id="cv-preview-content">
-      <div class="preview-close">
-        <button id="closePreviewBtn"><i class="fas fa-times"></i> Close</button>
-      </div>
+      <div class="preview-close"><button id="closePreviewBtn"><i class="fas fa-times"></i> Close</button></div>
       <div id="cv-preview-body"></div>
     </div>
   </div>
 
-  <p style="text-align: center; margin-top: 16px; font-size: 0.7rem; color: #6f81a5;"><i class="fas fa-edit"></i> All fields editable · no API · A4 ready</p>
+  <p style="text-align:center;margin-top:14px;font-size:0.65rem;color:#6f81a5;"><i class="fas fa-edit"></i> Full editable · Upload JSON · 4 templates · A4 ready</p>
 </div>
 
 <script>
@@ -546,8 +218,8 @@
       additional: document.getElementById('section-additional')
     };
     const categoryBtns = document.querySelectorAll('.category-btn');
-    const layoutBtns = document.querySelectorAll('.layout-btn');
-    let currentLayout = 'classic';
+    const templateBtns = document.querySelectorAll('.switcher-btn');
+    let currentTemplate = 'classic';
 
     // fields
     const fullName = document.getElementById('fullName');
@@ -580,218 +252,380 @@
         categoryBtns.forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         const sectionId = this.dataset.section;
-        Object.keys(sections).forEach(key => {
-          sections[key].classList.remove('active-section');
-        });
+        Object.keys(sections).forEach(key => sections[key].classList.remove('active-section'));
         if (sections[sectionId]) sections[sectionId].classList.add('active-section');
       });
     });
 
-    // ----- layout switching -----
-    layoutBtns.forEach(btn => {
+    // ----- template switching -----
+    templateBtns.forEach(btn => {
       btn.addEventListener('click', function() {
-        layoutBtns.forEach(b => b.classList.remove('active'));
+        templateBtns.forEach(b => b.classList.remove('active'));
         this.classList.add('active');
-        currentLayout = this.dataset.layout;
+        currentTemplate = this.dataset.template;
       });
     });
 
-    // ----- build A4 HTML with layout variants -----
-    function buildA4HTML(layout = currentLayout) {
-      const name = fullName.value || 'Your Name';
-      const emailVal = email.value || 'email@example.com';
-      const phoneVal = phone.value || 'phone';
-      const addressVal = address.value || 'address';
-      const linkedinVal = linkedin.value || 'linkedin';
-      const summaryVal = summary.value || 'Summary not provided.';
-      const exp1TitleVal = exp1Title.value || 'Job Title';
-      const exp1CompanyVal = exp1Company.value || 'Company';
-      const exp1YearVal = exp1Year.value || '';
-      const exp1DescVal = exp1Desc.value || 'Description';
-      const exp2TitleVal = exp2Title.value || 'Job Title';
-      const exp2CompanyVal = exp2Company.value || 'Company';
-      const exp2YearVal = exp2Year.value || '';
-      const exp2DescVal = exp2Desc.value || 'Description';
-      const eduDegreeVal = eduDegree.value || 'Degree';
-      const eduInstitutionVal = eduInstitution.value || 'Institution';
-      const eduYearVal = eduYear.value || 'Year';
-      const eduExtraVal = eduExtra.value || '';
-      const techSkillsVal = techSkills.value || '—';
-      const softSkillsVal = softSkills.value || '—';
-      const languagesVal = languages.value || '—';
-      const awardsVal = awards.value || '—';
-      const interestsVal = interests.value || '—';
+    // ----- get all field values as object -----
+    function getCVData() {
+      return {
+        fullName: fullName.value,
+        email: email.value,
+        phone: phone.value,
+        address: address.value,
+        linkedin: linkedin.value,
+        summary: summary.value,
+        exp1Title: exp1Title.value,
+        exp1Company: exp1Company.value,
+        exp1Year: exp1Year.value,
+        exp1Desc: exp1Desc.value,
+        exp2Title: exp2Title.value,
+        exp2Company: exp2Company.value,
+        exp2Year: exp2Year.value,
+        exp2Desc: exp2Desc.value,
+        eduDegree: eduDegree.value,
+        eduInstitution: eduInstitution.value,
+        eduYear: eduYear.value,
+        eduExtra: eduExtra.value,
+        techSkills: techSkills.value,
+        softSkills: softSkills.value,
+        languages: languages.value,
+        awards: awards.value,
+        interests: interests.value
+      };
+    }
 
-      // common header & footer
+    function setCVData(data) {
+      fullName.value = data.fullName || '';
+      email.value = data.email || '';
+      phone.value = data.phone || '';
+      address.value = data.address || '';
+      linkedin.value = data.linkedin || '';
+      summary.value = data.summary || '';
+      exp1Title.value = data.exp1Title || '';
+      exp1Company.value = data.exp1Company || '';
+      exp1Year.value = data.exp1Year || '';
+      exp1Desc.value = data.exp1Desc || '';
+      exp2Title.value = data.exp2Title || '';
+      exp2Company.value = data.exp2Company || '';
+      exp2Year.value = data.exp2Year || '';
+      exp2Desc.value = data.exp2Desc || '';
+      eduDegree.value = data.eduDegree || '';
+      eduInstitution.value = data.eduInstitution || '';
+      eduYear.value = data.eduYear || '';
+      eduExtra.value = data.eduExtra || '';
+      techSkills.value = data.techSkills || '';
+      softSkills.value = data.softSkills || '';
+      languages.value = data.languages || '';
+      awards.value = data.awards || '';
+      interests.value = data.interests || '';
+    }
+
+    // ----- sample templates (JSON) -----
+    const templates = {
+      classic: {
+        fullName: 'Alexandra Rivera',
+        email: 'alex.r@example.com',
+        phone: '+1 555 123 4567',
+        address: 'San Francisco, CA',
+        linkedin: 'linkedin.com/in/alexrivera',
+        summary: 'Creative marketing specialist with 6+ years of experience in brand strategy and digital campaigns. Proven track record of driving engagement and leading cross-functional teams.',
+        exp1Title: 'Marketing Lead',
+        exp1Company: 'BrandBoost Inc.',
+        exp1Year: '2021 – Present',
+        exp1Desc: 'Led a team of 10, increased organic reach by 40%, managed $2M budget.',
+        exp2Title: 'Marketing Coordinator',
+        exp2Company: 'DigitalWave',
+        exp2Year: '2019 – 2021',
+        exp2Desc: 'Managed social media, coordinated events, and analyzed campaign data.',
+        eduDegree: 'B.A. Communications',
+        eduInstitution: 'Stanford University',
+        eduYear: '2018',
+        eduExtra: 'Digital Marketing Certificate, Google Analytics',
+        techSkills: 'Brand Strategy, SEO/SEM, Adobe Creative Suite, Google Analytics',
+        softSkills: 'Leadership, Public Speaking, Cross-functional Collaboration',
+        languages: 'English (native), Spanish (fluent)',
+        awards: 'Marketing Excellence Award 2022',
+        interests: 'Photography, Volunteering, Chess'
+      },
+      modern: {
+        fullName: 'James Chen',
+        email: 'james.c@tech.io',
+        phone: '+1 987 654 3210',
+        address: 'Austin, TX',
+        linkedin: 'linkedin.com/in/jameschen',
+        summary: 'Full-stack developer with 8 years of experience building scalable web applications. Passionate about clean code and mentoring.',
+        exp1Title: 'Senior Developer',
+        exp1Company: 'CloudSphere',
+        exp1Year: '2020 – Present',
+        exp1Desc: 'Architected microservices, led 12 devs, reduced latency by 25%.',
+        exp2Title: 'Full Stack Engineer',
+        exp2Company: 'DataFlow',
+        exp2Year: '2017 – 2020',
+        exp2Desc: 'Built REST APIs, integrated third-party services, improved test coverage.',
+        eduDegree: 'M.S. Computer Science',
+        eduInstitution: 'MIT',
+        eduYear: '2017',
+        eduExtra: 'AWS Certified, MongoDB Certified',
+        techSkills: 'JavaScript, Python, AWS, Docker, React, Node.js',
+        softSkills: 'Leadership, Agile, Problem Solving',
+        languages: 'English, Mandarin',
+        awards: 'Hackathon Winner 2021',
+        interests: 'Open source, Cycling'
+      },
+      compact: {
+        fullName: 'Maria Garcia',
+        email: 'maria.g@design.co',
+        phone: '+1 415 555 9876',
+        address: 'Los Angeles, CA',
+        linkedin: 'linkedin.com/in/mariag',
+        summary: 'UI/UX designer with 5 years of experience in product design and user research. Focus on accessibility and delightful experiences.',
+        exp1Title: 'Lead Product Designer',
+        exp1Company: 'DesignLab',
+        exp1Year: '2020 – Present',
+        exp1Desc: 'Led design for 3 products, increased NPS by 20 points.',
+        exp2Title: 'UX Designer',
+        exp2Company: 'CreativeMinds',
+        exp2Year: '2018 – 2020',
+        exp2Desc: 'Conducted user interviews, created prototypes, improved usability.',
+        eduDegree: 'BFA in Design',
+        eduInstitution: 'RISD',
+        eduYear: '2018',
+        eduExtra: 'Google UX Certification',
+        techSkills: 'Figma, Sketch, Adobe XD, Prototyping, User Testing',
+        softSkills: 'Empathy, Collaboration, Storytelling',
+        languages: 'English, Spanish',
+        awards: 'Design Excellence Award 2022',
+        interests: 'Illustration, Travel'
+      },
+      elegant: {
+        fullName: 'Dr. Sarah Okafor',
+        email: 'sarah.o@research.org',
+        phone: '+1 202 555 3344',
+        address: 'Washington D.C.',
+        linkedin: 'linkedin.com/in/sarahokafor',
+        summary: 'PhD in Computational Biology with 10+ years of interdisciplinary research. Published 20+ peer-reviewed papers. Adept at leading research teams.',
+        exp1Title: 'Lead Research Scientist',
+        exp1Company: 'BioGen Institute',
+        exp1Year: '2019 – Present',
+        exp1Desc: 'Managed lab of 15, secured $3M in grants, published 8 papers.',
+        exp2Title: 'Postdoctoral Fellow',
+        exp2Company: 'Harvard Medical',
+        exp2Year: '2015 – 2019',
+        exp2Desc: 'Developed algorithms for genomic data analysis, collaborated with clinicians.',
+        eduDegree: 'Ph.D. Computational Biology',
+        eduInstitution: 'Stanford',
+        eduYear: '2015',
+        eduExtra: 'NIH Fellowship, R Programming',
+        techSkills: 'Python, R, Bioinformatics, Machine Learning, Statistics',
+        softSkills: 'Leadership, Communication, Grant Writing',
+        languages: 'English, French, Igbo',
+        awards: 'Young Scientist Award 2020',
+        interests: 'Mentoring, Science Communication'
+      }
+    };
+
+    // apply template
+    function applyTemplate(name) {
+      if (templates[name]) {
+        setCVData(templates[name]);
+        // update active template button
+        templateBtns.forEach(b => {
+          b.classList.remove('active');
+          if (b.dataset.template === name) b.classList.add('active');
+        });
+        currentTemplate = name;
+      }
+    }
+
+    // ----- Build A4 HTML with template layout -----
+    function buildA4HTML(template = currentTemplate) {
+      const d = getCVData();
       const header = `
         <div class="a4-header">
-          <h1>${name}</h1>
+          <h1>${d.fullName || 'Your Name'}</h1>
           <div class="contact-info">
-            <span><i class="fas fa-envelope"></i> ${emailVal}</span>
-            <span><i class="fas fa-phone"></i> ${phoneVal}</span>
-            <span><i class="fas fa-map-marker-alt"></i> ${addressVal}</span>
-            <span><i class="fas fa-link"></i> ${linkedinVal}</span>
+            <span><i class="fas fa-envelope"></i> ${d.email || 'email'}</span>
+            <span><i class="fas fa-phone"></i> ${d.phone || 'phone'}</span>
+            <span><i class="fas fa-map-marker-alt"></i> ${d.address || 'address'}</span>
+            <span><i class="fas fa-link"></i> ${d.linkedin || 'linkedin'}</span>
           </div>
         </div>
       `;
       const footer = `<div class="a4-footer">CV generated via CV Maker · Telegram Mini App · A4 ready</div>`;
 
-      // build main content based on layout
-      let mainContent = '';
-      if (layout === 'classic') {
-        mainContent = `
+      let main = '';
+      if (template === 'classic') {
+        main = `
           ${header}
           <div class="a4-section-title">Professional Summary</div>
-          <p style="margin: 6px 0 12px 0; line-height:1.6;">${summaryVal}</p>
+          <p style="margin:4px 0 10px 0;line-height:1.6;">${d.summary || '—'}</p>
           <div class="a4-section-title">Experience</div>
-          <div class="a4-experience-item"><span class="title">${exp1TitleVal}</span> – ${exp1CompanyVal} <span class="meta">${exp1YearVal}</span><br><span style="margin-left:12px;font-size:0.9rem;">${exp1DescVal}</span></div>
-          <div class="a4-experience-item" style="margin-top:8px;"><span class="title">${exp2TitleVal}</span> – ${exp2CompanyVal} <span class="meta">${exp2YearVal}</span><br><span style="margin-left:12px;font-size:0.9rem;">${exp2DescVal}</span></div>
+          <div class="a4-experience-item"><span class="title">${d.exp1Title || 'Job Title'}</span> – ${d.exp1Company || 'Company'} <span class="meta">${d.exp1Year || ''}</span><br><span style="margin-left:12px;font-size:0.9rem;">${d.exp1Desc || ''}</span></div>
+          <div class="a4-experience-item" style="margin-top:6px;"><span class="title">${d.exp2Title || 'Job Title'}</span> – ${d.exp2Company || 'Company'} <span class="meta">${d.exp2Year || ''}</span><br><span style="margin-left:12px;font-size:0.9rem;">${d.exp2Desc || ''}</span></div>
           <div class="a4-section-title">Education</div>
-          <div><strong>${eduDegreeVal}</strong> – ${eduInstitutionVal} (${eduYearVal})<br><span style="margin-left:12px;font-size:0.9rem;">${eduExtraVal}</span></div>
+          <div><strong>${d.eduDegree || 'Degree'}</strong> – ${d.eduInstitution || 'Institution'} (${d.eduYear || 'Year'})<br><span style="margin-left:12px;font-size:0.9rem;">${d.eduExtra || ''}</span></div>
           <div class="a4-section-title">Skills</div>
-          <div><strong>Technical:</strong> ${techSkillsVal}</div>
-          <div><strong>Soft:</strong> ${softSkillsVal}</div>
+          <div><strong>Technical:</strong> ${d.techSkills || '—'}</div>
+          <div><strong>Soft:</strong> ${d.softSkills || '—'}</div>
           <div class="a4-section-title">Additional</div>
-          <div><strong>Languages:</strong> ${languagesVal}</div>
-          <div><strong>Awards:</strong> ${awardsVal}</div>
-          <div><strong>Interests:</strong> ${interestsVal}</div>
+          <div><strong>Languages:</strong> ${d.languages || '—'}</div>
+          <div><strong>Awards:</strong> ${d.awards || '—'}</div>
+          <div><strong>Interests:</strong> ${d.interests || '—'}</div>
           ${footer}
         `;
-      } else if (layout === 'modern') {
-        // two column with left sidebar
-        mainContent = `
+      } else if (template === 'modern') {
+        main = `
           ${header}
           <div class="a4-two-col">
             <div class="left-col">
-              <div style="margin-bottom:20px;"><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Summary</h3><p style="font-size:0.9rem;line-height:1.5;">${summaryVal}</p></div>
-              <div style="margin-bottom:20px;"><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Skills</h3><div><strong>Tech:</strong> ${techSkillsVal}</div><div><strong>Soft:</strong> ${softSkillsVal}</div></div>
-              <div><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Languages</h3><div>${languagesVal}</div></div>
+              <div style="margin-bottom:16px;"><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Summary</h3><p style="font-size:0.9rem;line-height:1.5;">${d.summary || '—'}</p></div>
+              <div style="margin-bottom:16px;"><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Skills</h3><div><strong>Tech:</strong> ${d.techSkills || '—'}</div><div><strong>Soft:</strong> ${d.softSkills || '—'}</div></div>
+              <div><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Languages</h3><div>${d.languages || '—'}</div></div>
             </div>
             <div class="right-col">
-              <div style="margin-bottom:20px;"><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Experience</h3>
-                <div><strong>${exp1TitleVal}</strong> – ${exp1CompanyVal} <span style="float:right;">${exp1YearVal}</span><br><span style="font-size:0.9rem;">${exp1DescVal}</span></div>
-                <div style="margin-top:10px;"><strong>${exp2TitleVal}</strong> – ${exp2CompanyVal} <span style="float:right;">${exp2YearVal}</span><br><span style="font-size:0.9rem;">${exp2DescVal}</span></div>
+              <div style="margin-bottom:16px;"><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Experience</h3>
+                <div><strong>${d.exp1Title || 'Job Title'}</strong> – ${d.exp1Company || 'Company'} <span style="float:right;">${d.exp1Year || ''}</span><br><span style="font-size:0.9rem;">${d.exp1Desc || ''}</span></div>
+                <div style="margin-top:8px;"><strong>${d.exp2Title || 'Job Title'}</strong> – ${d.exp2Company || 'Company'} <span style="float:right;">${d.exp2Year || ''}</span><br><span style="font-size:0.9rem;">${d.exp2Desc || ''}</span></div>
               </div>
               <div><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Education</h3>
-                <div><strong>${eduDegreeVal}</strong> – ${eduInstitutionVal} (${eduYearVal})<br><span style="font-size:0.9rem;">${eduExtraVal}</span></div>
+                <div><strong>${d.eduDegree || 'Degree'}</strong> – ${d.eduInstitution || 'Institution'} (${d.eduYear || 'Year'})<br><span style="font-size:0.9rem;">${d.eduExtra || ''}</span></div>
               </div>
               <div style="margin-top:10px;"><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Awards & Interests</h3>
-                <div><strong>Awards:</strong> ${awardsVal}</div>
-                <div><strong>Interests:</strong> ${interestsVal}</div>
+                <div><strong>Awards:</strong> ${d.awards || '—'}</div>
+                <div><strong>Interests:</strong> ${d.interests || '—'}</div>
               </div>
             </div>
           </div>
           ${footer}
         `;
-      } else { // compact
-        mainContent = `
+      } else if (template === 'compact') {
+        main = `
           ${header}
-          <div style="display:flex;flex-wrap:wrap;gap:12px 24px;border-bottom:1px solid #e2eaf5;padding-bottom:10px;margin-bottom:12px;">
-            <span><strong>Summary:</strong> ${summaryVal}</span>
+          <div style="display:flex;flex-wrap:wrap;gap:8px 20px;border-bottom:1px solid #e2eaf5;padding-bottom:8px;margin-bottom:10px;">
+            <span><strong>Summary:</strong> ${d.summary || '—'}</span>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;">
-            <div><strong>Experience</strong><br>${exp1TitleVal} – ${exp1CompanyVal} (${exp1YearVal})<br><span style="font-size:0.85rem;">${exp1DescVal}</span><br><br>${exp2TitleVal} – ${exp2CompanyVal} (${exp2YearVal})<br><span style="font-size:0.85rem;">${exp2DescVal}</span></div>
-            <div><strong>Education</strong><br>${eduDegreeVal} – ${eduInstitutionVal} (${eduYearVal})<br><span style="font-size:0.85rem;">${eduExtraVal}</span><br><br><strong>Skills</strong><br>Tech: ${techSkillsVal}<br>Soft: ${softSkillsVal}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;">
+            <div><strong>Experience</strong><br>${d.exp1Title || 'Job Title'} – ${d.exp1Company || 'Company'} (${d.exp1Year || ''})<br><span style="font-size:0.85rem;">${d.exp1Desc || ''}</span><br><br>${d.exp2Title || 'Job Title'} – ${d.exp2Company || 'Company'} (${d.exp2Year || ''})<br><span style="font-size:0.85rem;">${d.exp2Desc || ''}</span></div>
+            <div><strong>Education</strong><br>${d.eduDegree || 'Degree'} – ${d.eduInstitution || 'Institution'} (${d.eduYear || ''})<br><span style="font-size:0.85rem;">${d.eduExtra || ''}</span><br><br><strong>Skills</strong><br>Tech: ${d.techSkills || '—'}<br>Soft: ${d.softSkills || '—'}</div>
           </div>
-          <div style="margin-top:12px;border-top:1px solid #e2eaf5;padding-top:10px;display:flex;flex-wrap:wrap;gap:8px 20px;">
-            <span><strong>Languages:</strong> ${languagesVal}</span>
-            <span><strong>Awards:</strong> ${awardsVal}</span>
-            <span><strong>Interests:</strong> ${interestsVal}</span>
+          <div style="margin-top:10px;border-top:1px solid #e2eaf5;padding-top:8px;display:flex;flex-wrap:wrap;gap:6px 18px;">
+            <span><strong>Languages:</strong> ${d.languages || '—'}</span>
+            <span><strong>Awards:</strong> ${d.awards || '—'}</span>
+            <span><strong>Interests:</strong> ${d.interests || '—'}</span>
+          </div>
+          ${footer}
+        `;
+      } else { // elegant
+        main = `
+          ${header}
+          <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+            <div>
+              <div class="a4-section-title">Summary</div>
+              <p style="margin:4px 0 12px 0;line-height:1.6;">${d.summary || '—'}</p>
+              <div class="a4-section-title">Experience</div>
+              <div class="a4-experience-item"><span class="title">${d.exp1Title || 'Job Title'}</span> – ${d.exp1Company || 'Company'} <span class="meta">${d.exp1Year || ''}</span><br><span style="margin-left:12px;font-size:0.9rem;">${d.exp1Desc || ''}</span></div>
+              <div class="a4-experience-item" style="margin-top:6px;"><span class="title">${d.exp2Title || 'Job Title'}</span> – ${d.exp2Company || 'Company'} <span class="meta">${d.exp2Year || ''}</span><br><span style="margin-left:12px;font-size:0.9rem;">${d.exp2Desc || ''}</span></div>
+            </div>
+            <div style="background:#f8faff;padding:16px;border-radius:16px;">
+              <div style="margin-bottom:14px;"><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Education</h3><div><strong>${d.eduDegree || 'Degree'}</strong><br>${d.eduInstitution || 'Institution'} (${d.eduYear || 'Year'})<br><span style="font-size:0.85rem;">${d.eduExtra || ''}</span></div></div>
+              <div style="margin-bottom:14px;"><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Skills</h3><div><strong>Tech:</strong> ${d.techSkills || '—'}</div><div><strong>Soft:</strong> ${d.softSkills || '—'}</div></div>
+              <div><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Languages</h3><div>${d.languages || '—'}</div></div>
+              <div style="margin-top:10px;"><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Awards & Interests</h3><div>${d.awards || '—'}</div><div>${d.interests || '—'}</div></div>
+            </div>
           </div>
           ${footer}
         `;
       }
-      return `<div class="a4-page">${mainContent}</div>`;
+      return `<div class="a4-page">${main}</div>`;
     }
 
-    // ----- show preview overlay -----
+    // ----- preview -----
     function showPreview() {
       const container = document.getElementById('cv-preview-container');
       const body = document.getElementById('cv-preview-body');
-      body.innerHTML = buildA4HTML(currentLayout);
+      body.innerHTML = buildA4HTML(currentTemplate);
       container.style.display = 'flex';
     }
-
     document.getElementById('previewBtn').addEventListener('click', showPreview);
-    document.getElementById('closePreviewBtn').addEventListener('click', function() {
-      document.getElementById('cv-preview-container').style.display = 'none';
-    });
-    document.getElementById('cv-preview-container').addEventListener('click', function(e) {
-      if (e.target === this) this.style.display = 'none';
-    });
+    document.getElementById('closePreviewBtn').addEventListener('click', () => document.getElementById('cv-preview-container').style.display = 'none');
+    document.getElementById('cv-preview-container').addEventListener('click', function(e) { if (e.target === this) this.style.display = 'none'; });
 
-    // ----- download PDF (A4) -----
+    // ----- download PDF -----
     document.getElementById('downloadPdfBtn').addEventListener('click', function() {
-      const previewBody = document.getElementById('cv-preview-body');
-      previewBody.innerHTML = buildA4HTML(currentLayout);
+      const body = document.getElementById('cv-preview-body');
+      body.innerHTML = buildA4HTML(currentTemplate);
       const container = document.getElementById('cv-preview-container');
       container.style.display = 'flex';
-      const opt = {
-        margin:        [0.6, 0.6, 0.6, 0.6],
-        filename:     'My_CV.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, letterRendering: true },
-        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-      };
+      const opt = { margin: [0.6,0.6,0.6,0.6], filename: 'My_CV.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, letterRendering: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
       const element = document.getElementById('cv-preview-body');
-      html2pdf().set(opt).from(element).save().then(() => {
-        container.style.display = 'none';
-      }).catch(() => {
-        container.style.display = 'none';
-      });
+      html2pdf().set(opt).from(element).save().then(() => container.style.display = 'none').catch(() => container.style.display = 'none');
     });
 
     // ----- download Word -----
     document.getElementById('downloadWordBtn').addEventListener('click', function() {
-      const content = buildA4HTML(currentLayout);
-      const fullDoc = `
-        <html>
-          <head><meta charset="UTF-8"><title>My CV</title>
-          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-          <style>body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 1000px; margin: 20px auto; padding: 20px; } .a4-page { background: white; }</style>
-          </head>
-          <body>${content}</body>
-        </html>
-      `;
+      const content = buildA4HTML(currentTemplate);
+      const fullDoc = `<html><head><meta charset="UTF-8"><title>My CV</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"><style>body{font-family:'Segoe UI',Arial,sans-serif;max-width:1000px;margin:20px auto;padding:20px;}.a4-page{background:white;}</style></head><body>${content}</body></html>`;
       const blob = new Blob([fullDoc], { type: 'application/msword' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = 'My_CV.doc';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      a.href = url; a.download = 'My_CV.doc';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     });
 
-    // ----- reset -----
+    // ----- save as JSON (template) -----
+    document.getElementById('saveTemplateBtn').addEventListener('click', function() {
+      const data = getCVData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'my_cv_template.json';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    });
+
+    // ----- upload & apply JSON -----
+    let uploadedData = null;
+    document.getElementById('cvUpload').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        try {
+          uploadedData = JSON.parse(ev.target.result);
+          document.getElementById('uploadStatus').textContent = '✅ Loaded';
+        } catch { document.getElementById('uploadStatus').textContent = '❌ Invalid JSON'; }
+      };
+      reader.readAsText(file);
+    });
+    document.getElementById('applyUploadBtn').addEventListener('click', function() {
+      if (uploadedData) {
+        setCVData(uploadedData);
+        document.getElementById('uploadStatus').textContent = '✅ Applied';
+      } else {
+        alert('Please upload a valid JSON file first.');
+      }
+    });
+
+    // ----- reset to current template default -----
     document.getElementById('resetBtn').addEventListener('click', function() {
-      if (!confirm('Reset all fields to default examples?')) return;
-      fullName.value = 'Alexandra Rivera';
-      email.value = 'alex.r@example.com';
-      phone.value = '+1 555 123 4567';
-      address.value = 'San Francisco, CA';
-      linkedin.value = 'linkedin.com/in/alexrivera';
-      summary.value = 'Creative marketing specialist with 6+ years of experience in brand strategy and digital campaigns. Proven track record of driving engagement and leading cross-functional teams.';
-      exp1Title.value = 'Marketing Lead';
-      exp1Company.value = 'BrandBoost Inc.';
-      exp1Year.value = '2021 – Present';
-      exp1Desc.value = 'Led a team of 10, increased organic reach by 40%, managed $2M budget.';
-      exp2Title.value = 'Marketing Coordinator';
-      exp2Company.value = 'DigitalWave';
-      exp2Year.value = '2019 – 2021';
-      exp2Desc.value = 'Managed social media, coordinated events, and analyzed campaign data.';
-      eduDegree.value = 'B.A. Communications';
-      eduInstitution.value = 'Stanford University';
-      eduYear.value = '2018';
-      eduExtra.value = 'Digital Marketing Certificate, Google Analytics';
-      techSkills.value = 'Brand Strategy, SEO/SEM, Adobe Creative Suite, Google Analytics';
-      softSkills.value = 'Leadership, Public Speaking, Cross-functional Collaboration';
-      languages.value = 'English (native), Spanish (fluent)';
-      awards.value = 'Marketing Excellence Award 2022';
-      interests.value = 'Photography, Volunteering, Chess';
+      if (!confirm('Reset to current template defaults?')) return;
+      const activeTemplate = document.querySelector('.switcher-btn.active')?.dataset.template || 'classic';
+      if (templates[activeTemplate]) setCVData(templates[activeTemplate]);
     });
 
+    // ----- template switcher click to apply -----
+    templateBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const tpl = this.dataset.template;
+        if (templates[tpl]) {
+          setCVData(templates[tpl]);
+          currentTemplate = tpl;
+        }
+      });
+    });
+
+    // ----- initial: apply classic -----
+    setCVData(templates.classic);
   })();
 </script>
 </body>
