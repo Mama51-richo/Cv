@@ -1,1 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CV Maker · Telegram Mini App</title>
+  <!-- Font Awesome (icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- html2pdf (for PDF export) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+    }
+    body {
+      background: #f4f7fc;
+      display: flex;
+      justify-content: center;
+      padding: 20px 12px 40px;
+      min-height: 100vh;
+    }
+    .app-container {
+      max-width: 820px;
+      width: 100%;
+    }
+    /* header */
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      padding: 14px 22px;
+      border-radius: 28px;
+      box-shadow: 0 8px 20px rgba(0,20,50,0.06);
+      margin-bottom: 24px;
+    }
+    .app-header h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      background: linear-gradient(145deg, #0b2b5c, #1a4b8a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.3px;
+    }
+    .app-header i {
+      font-size: 1.9rem;
+      color: #1a4b8a;
+      background: #e9eff8;
+      padding: 10px;
+      border-radius: 40px;
+    }
+    /* category tabs */
+    .category-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 22px;
+      background: white;
+      padding: 12px 16px;
+      border-radius: 40px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    }
+    .category-btn {
+      background: transparent;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: #2c3e66;
+      transition: 0.2s;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .category-btn i {
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+    .category-btn.active {
+      background: #1a4b8a;
+      color: white;
+      box-shadow: 0 4px 10px rgba(26,75,138,0.25);
+    }
+    .category-btn.active i {
+      opacity: 1;
+    }
+    /* main card */
+    .cv-card {
+      background: white;
+      border-radius: 32px;
+      box-shadow: 0 20px 40px -12px rgba(0,20,40,0.2);
+      padding: 28px 24px;
+      transition: 0.2s;
+    }
+    /* editable fields */
+    .cv-section {
+      display: none;
+      animation: fade 0.2s ease;
+    }
+    .cv-section.active-section {
+      display: block;
+    }
+    @keyframes fade {
+      0% { opacity: 0.5; transform: translateY(5px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .field-group {
+      margin-bottom: 20px;
+    }
+    .field-group label {
+      display: block;
+      font-weight: 600;
+      color: #1f2a44;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      letter-spacing: 0.2px;
+    }
+    .field-group input, .field-group textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid #e2e9f2;
+      border-radius: 18px;
+      font-size: 0.95rem;
+      transition: 0.15s;
+      background: #fafcff;
+      outline: none;
+    }
+    .field-group input:focus, .field-group textarea:focus {
+      border-color: #1a4b8a;
+      box-shadow: 0 0 0 4px rgba(26,75,138,0.1);
+      background: white;
+    }
+    .field-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    .row-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .inline-icon {
+      margin-right: 8px;
+      color: #1a4b8a;
+      width: 20px;
+    }
+    .helper-note {
+      font-size: 0.75rem;
+      color: #6a7b9c;
+      margin-top: 4px;
+      padding-left: 8px;
+    }
+    /* action buttons */
+    .action-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 30px;
+      padding-top: 18px;
+      border-top: 2px solid #eef4fa;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: none;
+      background: #eef4fa;
+      color: #1f2a44;
+      cursor: pointer;
+      transition: 0.15s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .btn-primary {
+      background: #1a4b8a;
+      color: white;
+      box-shadow: 0 8px 16px -6px rgba(26,75,138,0.3);
+    }
+    .btn-primary i { color: white; }
+    .btn-primary:hover { background: #0f3a6e; transform: scale(0.97); }
+    .btn-outline { background: transparent; border: 2px solid #d0dcee; }
+    .btn-outline:hover { background: #e9eff8; }
+    .btn-success { background: #1f8b4c; color: white; }
+    .btn-success i { color: white; }
+    .btn-success:hover { background: #15733e; }
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    /* preview / download area (hidden by default, used for PDF) */
+    #cv-preview-container {
+      display: none;
+    }
+    /* responsive */
+    @media (max-width: 550px) {
+      .row-2col { grid-template-columns: 1fr; }
+      .app-header h1 { font-size: 1.2rem; }
+      .category-btn { font-size: 0.8rem; padding: 6px 14px; }
+      .cv-card { padding: 20px 16px; }
+      .action-bar { flex-direction: column; align-items: stretch; }
+      .btn-group { justify-content: center; }
+    }
+    /* mini tag */
+    .mini-tag {
+      background: #dce5f2;
+      padding: 2px 12px;
+      border-radius: 50px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #1a3b66;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+<div class="app-container">
 
+  <!-- header -->
+  <div class="app-header">
+    <h1><i class="fas fa-file-alt" style="background: none; padding: 0; color: #1a4b8a; margin-right: 10px;"></i>CV Maker</h1>
+    <i class="fas fa-pen-fancy"></i>
+  </div>
+
+  <!-- category tabs -->
+  <div class="category-tabs">
+    <button class="category-btn active" data-section="personal"><i class="fas fa-user"></i> Personal</button>
+    <button class="category-btn" data-section="summary"><i class="fas fa-flag"></i> Summary</button>
+    <button class="category-btn" data-section="experience"><i class="fas fa-briefcase"></i> Experience</button>
+    <button class="category-btn" data-section="education"><i class="fas fa-graduation-cap"></i> Education</button>
+    <button class="category-btn" data-section="skills"><i class="fas fa-cogs"></i> Skills</button>
+    <button class="category-btn" data-section="additional"><i class="fas fa-plus-circle"></i> Additional</button>
+  </div>
+
+  <!-- CV card -->
+  <div class="cv-card" id="cvCard">
+    <!-- PERSONAL -->
+    <div class="cv-section active-section" id="section-personal">
+      <div class="field-group">
+        <label><i class="fas fa-user-circle inline-icon"></i> Full Name</label>
+        <input type="text" id="fullName" placeholder="e.g. Alex Johnson" value="Alexandra Rivera">
+      </div>
+      <div class="row-2col">
+        <div class="field-group">
+          <label><i class="fas fa-envelope inline-icon"></i> Email</label>
+          <input type="email" id="email" placeholder="name@domain.com" value="alex.r@example.com">
+        </div>
+        <div class="field-group">
+          <label><i class="fas fa-phone-alt inline-icon"></i> Phone</label>
+          <input type="text" id="phone" placeholder="+1 234 567 890" value="+1 555 123 4567">
+        </div>
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-map-marker-alt inline-icon"></i> Address</label>
+        <input type="text" id="address" placeholder="City, Country" value="San Francisco, CA">
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-link inline-icon"></i> LinkedIn / Portfolio</label>
+        <input type="text" id="linkedin" placeholder="linkedin.com/in/yourprofile" value="linkedin.com/in/alexrivera">
+      </div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="cv-section" id="section-summary">
+      <div class="field-group">
+        <label><i class="fas fa-quote-right inline-icon"></i> Professional Summary</label>
+        <textarea id="summary" rows="4" placeholder="Write a compelling summary…">Creative marketing specialist with 6+ years of experience in brand strategy and digital campaigns. Proven track record of driving engagement and leading cross-functional teams.</textarea>
+      </div>
+    </div>
+
+    <!-- EXPERIENCE -->
+    <div class="cv-section" id="section-experience">
+      <div class="field-group">
+        <label><i class="fas fa-building inline-icon"></i> Experience 1 – Job Title</label>
+        <input type="text" id="exp1Title" placeholder="e.g. Senior Marketing Manager" value="Marketing Lead">
+      </div>
+      <div class="row-2col">
+        <div class="field-group">
+          <label>Company</label>
+          <input type="text" id="exp1Company" placeholder="Company name" value="BrandBoost Inc.">
+        </div>
+        <div class="field-group">
+          <label>Year (start – end)</label>
+          <input type="text" id="exp1Year" placeholder="2020 – 2023" value="2021 – Present">
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Key responsibilities</label>
+        <textarea id="exp1Desc" rows="3" placeholder="Describe your role…">Led a team of 10, increased organic reach by 40%, managed $2M budget.</textarea>
+      </div>
+      <hr style="margin: 18px 0; border: 1px dashed #dfe8f2;">
+      <div class="field-group">
+        <label><i class="fas fa-building inline-icon"></i> Experience 2 – Job Title</label>
+        <input type="text" id="exp2Title" placeholder="e.g. Junior Analyst" value="Marketing Coordinator">
+      </div>
+      <div class="row-2col">
+        <div class="field-group">
+          <label>Company</label>
+          <input type="text" id="exp2Company" placeholder="Company name" value="DigitalWave">
+        </div>
+        <div class="field-group">
+          <label>Year</label>
+          <input type="text" id="exp2Year" placeholder="2018 – 2020" value="2019 – 2021">
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Responsibilities</label>
+        <textarea id="exp2Desc" rows="3" placeholder="Describe your role…">Managed social media, coordinated events, and analyzed campaign data.</textarea>
+      </div>
+    </div>
+
+    <!-- EDUCATION -->
+    <div class="cv-section" id="section-education">
+      <div class="field-group">
+        <label><i class="fas fa-university inline-icon"></i> Degree / Major</label>
+        <input type="text" id="eduDegree" placeholder="e.g. B.S. Marketing" value="B.A. Communications">
+      </div>
+      <div class="row-2col">
+        <div class="field-group">
+          <label>Institution</label>
+          <input type="text" id="eduInstitution" placeholder="University name" value="Stanford University">
+        </div>
+        <div class="field-group">
+          <label>Year</label>
+          <input type="text" id="eduYear" placeholder="Graduation year" value="2018">
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Additional education / certifications</label>
+        <textarea id="eduExtra" rows="2" placeholder="Honors, courses…">Digital Marketing Certificate, Google Analytics</textarea>
+      </div>
+    </div>
+
+    <!-- SKILLS -->
+    <div class="cv-section" id="section-skills">
+      <div class="field-group">
+        <label><i class="fas fa-code inline-icon"></i> Technical Skills</label>
+        <textarea id="techSkills" rows="3" placeholder="e.g. Python, Figma, SEO">Brand Strategy, SEO/SEM, Adobe Creative Suite, Google Analytics</textarea>
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-users inline-icon"></i> Soft Skills</label>
+        <textarea id="softSkills" rows="2" placeholder="e.g. Leadership, Communication">Leadership, Public Speaking, Cross-functional Collaboration</textarea>
+      </div>
+    </div>
+
+    <!-- ADDITIONAL -->
+    <div class="cv-section" id="section-additional">
+      <div class="field-group">
+        <label><i class="fas fa-globe inline-icon"></i> Languages</label>
+        <input type="text" id="languages" placeholder="English, Spanish, etc." value="English (native), Spanish (fluent)">
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-trophy inline-icon"></i> Awards / Certifications</label>
+        <textarea id="awards" rows="2" placeholder="e.g. Employee of the Month">Marketing Excellence Award 2022</textarea>
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-heart inline-icon"></i> Interests</label>
+        <input type="text" id="interests" placeholder="Hobbies, volunteering…" value="Photography, Volunteering, Chess">
+      </div>
+    </div>
+
+    <!-- action bar -->
+    <div class="action-bar">
+      <div class="btn-group">
+        <button class="btn btn-primary" id="downloadPdfBtn"><i class="fas fa-file-pdf"></i> PDF</button>
+        <button class="btn btn-success" id="downloadWordBtn"><i class="fas fa-file-word"></i> Word</button>
+      </div>
+      <button class="btn btn-outline" id="resetBtn"><i class="fas fa-undo-alt"></i> Reset</button>
+    </div>
+  </div>
+
+  <!-- hidden preview container (for PDF generation) -->
+  <div id="cv-preview-container">
+    <div id="cv-preview-content" style="background: white; padding: 40px; max-width: 900px; margin: auto; font-family: 'Segoe UI', sans-serif; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+      <!-- filled by javascript -->
+    </div>
+  </div>
+
+  <p style="text-align: center; margin-top: 20px; font-size: 0.8rem; color: #6f81a5;"><i class="fas fa-edit"></i> All fields editable · no API · fully client-side</p>
+</div>
+
+<script>
+  (function() {
+    // ----- DOM refs -----
+    const sections = {
+      personal: document.getElementById('section-personal'),
+      summary: document.getElementById('section-summary'),
+      experience: document.getElementById('section-experience'),
+      education: document.getElementById('section-education'),
+      skills: document.getElementById('section-skills'),
+      additional: document.getElementById('section-additional')
+    };
+    const categoryBtns = document.querySelectorAll('.category-btn');
+    const fullName = document.getElementById('fullName');
+    const email = document.getElementById('email');
+    const phone = document.getElementById('phone');
+    const address = document.getElementById('address');
+    const linkedin = document.getElementById('linkedin');
+    const summary = document.getElementById('summary');
+    const exp1Title = document.getElementById('exp1Title');
+    const exp1Company = document.getElementById('exp1Company');
+    const exp1Year = document.getElementById('exp1Year');
+    const exp1Desc = document.getElementById('exp1Desc');
+    const exp2Title = document.getElementById('exp2Title');
+    const exp2Company = document.getElementById('exp2Company');
+    const exp2Year = document.getElementById('exp2Year');
+    const exp2Desc = document.getElementById('exp2Desc');
+    const eduDegree = document.getElementById('eduDegree');
+    const eduInstitution = document.getElementById('eduInstitution');
+    const eduYear = document.getElementById('eduYear');
+    const eduExtra = document.getElementById('eduExtra');
+    const techSkills = document.getElementById('techSkills');
+    const softSkills = document.getElementById('softSkills');
+    const languages = document.getElementById('languages');
+    const awards = document.getElementById('awards');
+    const interests = document.getElementById('interests');
+
+    // ----- category switching -----
+    categoryBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        categoryBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const sectionId = this.dataset.section;
+        Object.keys(sections).forEach(key => {
+          sections[key].classList.remove('active-section');
+        });
+        if (sections[sectionId]) sections[sectionId].classList.add('active-section');
+      });
+    });
+
+    // ----- build preview HTML from current fields (for PDF/Word) -----
+    function buildCVHTML() {
+      return `
+        <div style="background: white; padding: 30px 30px 20px; font-family: 'Segoe UI', Roboto, sans-serif; color: #1e2a41;">
+          <h1 style="font-size: 2.2rem; font-weight: 600; margin-bottom: 0.2rem; letter-spacing: -0.5px;">${fullName.value || 'Your Name'}</h1>
+          <div style="display: flex; flex-wrap: wrap; gap: 12px 24px; color: #2c4270; margin: 12px 0 18px; border-bottom: 2px solid #eaf0f8; padding-bottom: 14px;">
+            <span><i class="fas fa-envelope" style="margin-right: 6px;"></i> ${email.value || 'email@example.com'}</span>
+            <span><i class="fas fa-phone" style="margin-right: 6px;"></i> ${phone.value || 'phone'}</span>
+            <span><i class="fas fa-map-marker-alt" style="margin-right: 6px;"></i> ${address.value || 'address'}</span>
+            <span><i class="fas fa-link" style="margin-right: 6px;"></i> ${linkedin.value || 'linkedin'}</span>
+          </div>
+          <div style="margin-bottom: 20px;">
+            <h3 style="font-weight: 600; color: #0e2b50; border-left: 4px solid #1a4b8a; padding-left: 12px;">Professional Summary</h3>
+            <p style="margin-top: 6px; line-height: 1.6;">${summary.value || 'Summary not provided.'}</p>
+          </div>
+          <div style="margin-bottom: 20px;">
+            <h3 style="font-weight: 600; color: #0e2b50; border-left: 4px solid #1a4b8a; padding-left: 12px;">Experience</h3>
+            <div style="margin-top: 8px;"><strong>${exp1Title.value || 'Job Title'}</strong> – ${exp1Company.value || 'Company'} <span style="float: right;">${exp1Year.value || ''}</span></div>
+            <p style="margin: 4px 0 10px 12px; line-height: 1.5;">${exp1Desc.value || 'Description'}</p>
+            <div style="margin-top: 8px;"><strong>${exp2Title.value || 'Job Title'}</strong> – ${exp2Company.value || 'Company'} <span style="float: right;">${exp2Year.value || ''}</span></div>
+            <p style="margin: 4px 0 0 12px; line-height: 1.5;">${exp2Desc.value || 'Description'}</p>
+          </div>
+          <div style="margin-bottom: 20px;">
+            <h3 style="font-weight: 600; color: #0e2b50; border-left: 4px solid #1a4b8a; padding-left: 12px;">Education</h3>
+            <div><strong>${eduDegree.value || 'Degree'}</strong> – ${eduInstitution.value || 'Institution'} (${eduYear.value || 'Year'})</div>
+            <p style="margin: 4px 0 0 12px;">${eduExtra.value || ''}</p>
+          </div>
+          <div style="margin-bottom: 20px;">
+            <h3 style="font-weight: 600; color: #0e2b50; border-left: 4px solid #1a4b8a; padding-left: 12px;">Skills</h3>
+            <div><strong>Technical:</strong> ${techSkills.value || '—'}</div>
+            <div><strong>Soft:</strong> ${softSkills.value || '—'}</div>
+          </div>
+          <div style="margin-bottom: 8px;">
+            <h3 style="font-weight: 600; color: #0e2b50; border-left: 4px solid #1a4b8a; padding-left: 12px;">Additional</h3>
+            <div><strong>Languages:</strong> ${languages.value || '—'}</div>
+            <div><strong>Awards:</strong> ${awards.value || '—'}</div>
+            <div><strong>Interests:</strong> ${interests.value || '—'}</div>
+          </div>
+          <p style="margin-top: 20px; font-size: 0.7rem; color: #6f7e9e; text-align: center; border-top: 1px solid #e3eaf3; padding-top: 14px;">CV generated via CV Maker · Telegram Mini App</p>
+        </div>
+      `;
+    }
+
+    // ----- download PDF using html2pdf -----
+    document.getElementById('downloadPdfBtn').addEventListener('click', function() {
+      const previewContainer = document.getElementById('cv-preview-container');
+      const previewContent = document.getElementById('cv-preview-content');
+      previewContent.innerHTML = buildCVHTML();
+      previewContainer.style.display = 'block';
+
+      const opt = {
+        margin:        [0.6, 0.6, 0.6, 0.6],
+        filename:     'My_CV.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, letterRendering: true },
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(previewContent).save().then(() => {
+        previewContainer.style.display = 'none';
+      }).catch(() => {
+        previewContainer.style.display = 'none';
+      });
+    });
+
+    // ----- download Word ( .doc ) using Blob -----
+    document.getElementById('downloadWordBtn').addEventListener('click', function() {
+      const content = buildCVHTML();
+      // create a full HTML doc with styles for word
+      const fullDoc = `
+        <html>
+          <head><meta charset="UTF-8"><title>My CV</title>
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+          <style>body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 900px; margin: 20px auto; padding: 20px; }</style>
+          </head>
+          <body>${content}</body>
+        </html>
+      `;
+      const blob = new Blob([fullDoc], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'My_CV.doc';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    // ----- reset to defaults (optional) -----
+    document.getElementById('resetBtn').addEventListener('click', function() {
+      if (!confirm('Reset all fields to default examples?')) return;
+      fullName.value = 'Alexandra Rivera';
+      email.value = 'alex.r@example.com';
+      phone.value = '+1 555 123 4567';
+      address.value = 'San Francisco, CA';
+      linkedin.value = 'linkedin.com/in/alexrivera';
+      summary.value = 'Creative marketing specialist with 6+ years of experience in brand strategy and digital campaigns. Proven track record of driving engagement and leading cross-functional teams.';
+      exp1Title.value = 'Marketing Lead';
+      exp1Company.value = 'BrandBoost Inc.';
+      exp1Year.value = '2021 – Present';
+      exp1Desc.value = 'Led a team of 10, increased organic reach by 40%, managed $2M budget.';
+      exp2Title.value = 'Marketing Coordinator';
+      exp2Company.value = 'DigitalWave';
+      exp2Year.value = '2019 – 2021';
+      exp2Desc.value = 'Managed social media, coordinated events, and analyzed campaign data.';
+      eduDegree.value = 'B.A. Communications';
+      eduInstitution.value = 'Stanford University';
+      eduYear.value = '2018';
+      eduExtra.value = 'Digital Marketing Certificate, Google Analytics';
+      techSkills.value = 'Brand Strategy, SEO/SEM, Adobe Creative Suite, Google Analytics';
+      softSkills.value = 'Leadership, Public Speaking, Cross-functional Collaboration';
+      languages.value = 'English (native), Spanish (fluent)';
+      awards.value = 'Marketing Excellence Award 2022';
+      interests.value = 'Photography, Volunteering, Chess';
+    });
+
+  })();
+</script>
+</body>
+                                                                                           </html>
