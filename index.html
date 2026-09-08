@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>CV Maker · Telegram Mini App</title>
+  <title>CV Maker Pro · Telegram Mini App</title>
   <!-- Font Awesome (icons) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <!-- html2pdf (for PDF export) -->
@@ -13,17 +13,17 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+      font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
     }
     body {
-      background: #f4f7fc;
+      background: #eef3fa;
       display: flex;
       justify-content: center;
-      padding: 20px 12px 40px;
+      padding: 16px 10px 40px;
       min-height: 100vh;
     }
     .app-container {
-      max-width: 820px;
+      max-width: 480px;
       width: 100%;
     }
     /* header */
@@ -32,14 +32,14 @@
       align-items: center;
       justify-content: space-between;
       background: white;
-      padding: 14px 22px;
-      border-radius: 28px;
-      box-shadow: 0 8px 20px rgba(0,20,50,0.06);
-      margin-bottom: 24px;
+      padding: 12px 18px;
+      border-radius: 30px;
+      box-shadow: 0 6px 16px rgba(0,20,40,0.06);
+      margin-bottom: 18px;
     }
     .app-header h1 {
-      font-size: 1.6rem;
-      font-weight: 600;
+      font-size: 1.4rem;
+      font-weight: 700;
       background: linear-gradient(145deg, #0b2b5c, #1a4b8a);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -47,58 +47,87 @@
       letter-spacing: -0.3px;
     }
     .app-header i {
-      font-size: 1.9rem;
+      font-size: 1.6rem;
       color: #1a4b8a;
       background: #e9eff8;
-      padding: 10px;
+      padding: 8px 10px;
       border-radius: 40px;
     }
-    /* category tabs */
-    .category-tabs {
+    /* layout switcher */
+    .layout-switcher {
       display: flex;
-      flex-wrap: wrap;
       gap: 8px;
-      margin-bottom: 22px;
       background: white;
-      padding: 12px 16px;
+      padding: 8px 14px;
       border-radius: 40px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+      margin-bottom: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      justify-content: center;
+      flex-wrap: wrap;
     }
-    .category-btn {
+    .layout-btn {
       background: transparent;
       border: none;
-      padding: 8px 18px;
-      border-radius: 40px;
-      font-weight: 500;
-      font-size: 0.9rem;
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 0.8rem;
       color: #2c3e66;
       transition: 0.2s;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 6px;
+      background: #f0f5fe;
     }
-    .category-btn i {
-      font-size: 0.9rem;
-      opacity: 0.7;
-    }
-    .category-btn.active {
+    .layout-btn i { font-size: 0.8rem; }
+    .layout-btn.active {
       background: #1a4b8a;
       color: white;
       box-shadow: 0 4px 10px rgba(26,75,138,0.25);
     }
-    .category-btn.active i {
-      opacity: 1;
+    /* category tabs */
+    .category-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+      background: white;
+      padding: 10px 12px;
+      border-radius: 40px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+      justify-content: center;
     }
+    .category-btn {
+      background: transparent;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: 0.78rem;
+      color: #2c3e66;
+      transition: 0.2s;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+    .category-btn i { font-size: 0.8rem; opacity: 0.7; }
+    .category-btn.active {
+      background: #1a4b8a;
+      color: white;
+      box-shadow: 0 4px 10px rgba(26,75,138,0.2);
+    }
+    .category-btn.active i { opacity: 1; }
     /* main card */
     .cv-card {
       background: white;
-      border-radius: 32px;
-      box-shadow: 0 20px 40px -12px rgba(0,20,40,0.2);
-      padding: 28px 24px;
+      border-radius: 28px;
+      box-shadow: 0 16px 36px -10px rgba(0,20,40,0.15);
+      padding: 20px 16px;
       transition: 0.2s;
     }
-    /* editable fields */
     .cv-section {
       display: none;
       animation: fade 0.2s ease;
@@ -107,54 +136,54 @@
       display: block;
     }
     @keyframes fade {
-      0% { opacity: 0.5; transform: translateY(5px); }
+      0% { opacity: 0.5; transform: translateY(6px); }
       100% { opacity: 1; transform: translateY(0); }
     }
     .field-group {
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
     .field-group label {
       display: block;
       font-weight: 600;
       color: #1f2a44;
-      margin-bottom: 6px;
-      font-size: 0.9rem;
+      margin-bottom: 5px;
+      font-size: 0.82rem;
       letter-spacing: 0.2px;
     }
     .field-group input, .field-group textarea {
       width: 100%;
-      padding: 12px 16px;
+      padding: 10px 14px;
       border: 1.5px solid #e2e9f2;
-      border-radius: 18px;
-      font-size: 0.95rem;
+      border-radius: 16px;
+      font-size: 0.9rem;
       transition: 0.15s;
       background: #fafcff;
       outline: none;
     }
     .field-group input:focus, .field-group textarea:focus {
       border-color: #1a4b8a;
-      box-shadow: 0 0 0 4px rgba(26,75,138,0.1);
+      box-shadow: 0 0 0 4px rgba(26,75,138,0.08);
       background: white;
     }
     .field-group textarea {
       resize: vertical;
-      min-height: 80px;
+      min-height: 70px;
     }
     .row-2col {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
+      gap: 12px;
     }
     .inline-icon {
-      margin-right: 8px;
+      margin-right: 6px;
       color: #1a4b8a;
-      width: 20px;
+      width: 18px;
     }
     .helper-note {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: #6a7b9c;
-      margin-top: 4px;
-      padding-left: 8px;
+      margin-top: 3px;
+      padding-left: 6px;
     }
     /* action buttons */
     .action-bar {
@@ -162,30 +191,32 @@
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
-      margin-top: 30px;
-      padding-top: 18px;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 16px;
       border-top: 2px solid #eef4fa;
     }
     .btn {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 12px 24px;
+      gap: 6px;
+      padding: 10px 18px;
       border-radius: 60px;
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       border: none;
       background: #eef4fa;
       color: #1f2a44;
       cursor: pointer;
       transition: 0.15s;
       box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+      flex: 1 1 auto;
+      justify-content: center;
     }
     .btn-primary {
       background: #1a4b8a;
       color: white;
-      box-shadow: 0 8px 16px -6px rgba(26,75,138,0.3);
+      box-shadow: 0 6px 14px -4px rgba(26,75,138,0.3);
     }
     .btn-primary i { color: white; }
     .btn-primary:hover { background: #0f3a6e; transform: scale(0.97); }
@@ -197,30 +228,132 @@
     .btn-group {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
+      width: 100%;
     }
-    /* preview / download area (hidden by default, used for PDF) */
+    .btn-group .btn { flex: 1 1 40%; }
+    /* hidden preview container for A4 generation */
     #cv-preview-container {
       display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(2px);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    #cv-preview-content {
+      background: white;
+      max-width: 900px;
+      width: 100%;
+      margin: auto;
+      border-radius: 20px;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+      overflow: auto;
+      max-height: 90vh;
+      padding: 0;
+    }
+    #cv-preview-content > div {
+      padding: 30px 28px;
+    }
+    .preview-close {
+      position: sticky;
+      top: 0;
+      background: white;
+      padding: 12px 20px;
+      border-bottom: 1px solid #eef4fa;
+      display: flex;
+      justify-content: flex-end;
+      z-index: 10;
+    }
+    .preview-close button {
+      background: #f0f4fc;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
     }
     /* responsive */
-    @media (max-width: 550px) {
-      .row-2col { grid-template-columns: 1fr; }
+    @media (max-width: 480px) {
+      .row-2col { grid-template-columns: 1fr; gap: 8px; }
       .app-header h1 { font-size: 1.2rem; }
-      .category-btn { font-size: 0.8rem; padding: 6px 14px; }
-      .cv-card { padding: 20px 16px; }
-      .action-bar { flex-direction: column; align-items: stretch; }
-      .btn-group { justify-content: center; }
+      .category-btn { font-size: 0.7rem; padding: 5px 10px; }
+      .layout-btn { font-size: 0.7rem; padding: 4px 12px; }
+      .cv-card { padding: 16px 12px; }
+      .btn { font-size: 0.8rem; padding: 8px 12px; }
     }
-    /* mini tag */
-    .mini-tag {
-      background: #dce5f2;
-      padding: 2px 12px;
-      border-radius: 50px;
+    /* A4 print style (hidden by default, used for preview) */
+    .a4-page {
+      background: white;
+      padding: 40px 36px;
+      max-width: 100%;
+      margin: 0 auto;
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      color: #1e2a41;
+      position: relative;
+    }
+    .a4-header {
+      border-bottom: 3px solid #1a4b8a;
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+    .a4-header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin: 0;
+    }
+    .a4-header .contact-info {
+      font-size: 0.85rem;
+      color: #2c4270;
+      text-align: right;
+    }
+    .a4-header .contact-info span { display: inline-block; margin-left: 12px; }
+    .a4-footer {
+      margin-top: 28px;
+      border-top: 1px solid #dce5f0;
+      padding-top: 14px;
       font-size: 0.7rem;
+      color: #6f7e9e;
+      text-align: center;
+    }
+    .a4-section-title {
       font-weight: 600;
-      color: #1a3b66;
-      margin-left: 8px;
+      color: #0e2b50;
+      border-left: 5px solid #1a4b8a;
+      padding-left: 12px;
+      margin: 18px 0 8px 0;
+      font-size: 1.1rem;
+    }
+    .a4-experience-item { margin-bottom: 10px; }
+    .a4-experience-item .title { font-weight: 600; }
+    .a4-experience-item .meta { float: right; color: #3a507a; }
+    .a4-skill-tag {
+      display: inline-block;
+      background: #eaf0f8;
+      padding: 2px 12px;
+      border-radius: 30px;
+      margin: 3px 4px 3px 0;
+      font-size: 0.8rem;
+    }
+    /* two column layout variant */
+    .a4-two-col {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 28px;
+    }
+    .a4-two-col .left-col { border-right: 1px solid #e2eaf5; padding-right: 20px; }
+    .a4-two-col .right-col { padding-left: 4px; }
+    @media (max-width: 600px) {
+      .a4-two-col { grid-template-columns: 1fr; gap: 6px; }
+      .a4-two-col .left-col { border-right: none; padding-right: 0; }
     }
   </style>
 </head>
@@ -229,8 +362,15 @@
 
   <!-- header -->
   <div class="app-header">
-    <h1><i class="fas fa-file-alt" style="background: none; padding: 0; color: #1a4b8a; margin-right: 10px;"></i>CV Maker</h1>
+    <h1><i class="fas fa-file-alt" style="background: none; padding: 0; color: #1a4b8a; margin-right: 8px;"></i>CV Maker</h1>
     <i class="fas fa-pen-fancy"></i>
+  </div>
+
+  <!-- layout switcher -->
+  <div class="layout-switcher">
+    <button class="layout-btn active" data-layout="classic"><i class="fas fa-columns"></i> Classic</button>
+    <button class="layout-btn" data-layout="modern"><i class="fas fa-layer-group"></i> Modern</button>
+    <button class="layout-btn" data-layout="compact"><i class="fas fa-compress-alt"></i> Compact</button>
   </div>
 
   <!-- category tabs -->
@@ -240,7 +380,7 @@
     <button class="category-btn" data-section="experience"><i class="fas fa-briefcase"></i> Experience</button>
     <button class="category-btn" data-section="education"><i class="fas fa-graduation-cap"></i> Education</button>
     <button class="category-btn" data-section="skills"><i class="fas fa-cogs"></i> Skills</button>
-    <button class="category-btn" data-section="additional"><i class="fas fa-plus-circle"></i> Additional</button>
+    <button class="category-btn" data-section="additional"><i class="fas fa-plus-circle"></i> Extra</button>
   </div>
 
   <!-- CV card -->
@@ -299,7 +439,7 @@
         <label>Key responsibilities</label>
         <textarea id="exp1Desc" rows="3" placeholder="Describe your role…">Led a team of 10, increased organic reach by 40%, managed $2M budget.</textarea>
       </div>
-      <hr style="margin: 18px 0; border: 1px dashed #dfe8f2;">
+      <hr style="margin: 16px 0; border: 1px dashed #dfe8f2;">
       <div class="field-group">
         <label><i class="fas fa-building inline-icon"></i> Experience 2 – Job Title</label>
         <input type="text" id="exp2Title" placeholder="e.g. Junior Analyst" value="Marketing Coordinator">
@@ -375,24 +515,28 @@
       <div class="btn-group">
         <button class="btn btn-primary" id="downloadPdfBtn"><i class="fas fa-file-pdf"></i> PDF</button>
         <button class="btn btn-success" id="downloadWordBtn"><i class="fas fa-file-word"></i> Word</button>
+        <button class="btn btn-outline" id="previewBtn"><i class="fas fa-eye"></i> Preview</button>
+        <button class="btn btn-outline" id="resetBtn"><i class="fas fa-undo-alt"></i> Reset</button>
       </div>
-      <button class="btn btn-outline" id="resetBtn"><i class="fas fa-undo-alt"></i> Reset</button>
     </div>
   </div>
 
-  <!-- hidden preview container (for PDF generation) -->
+  <!-- hidden preview container (A4 overlay) -->
   <div id="cv-preview-container">
-    <div id="cv-preview-content" style="background: white; padding: 40px; max-width: 900px; margin: auto; font-family: 'Segoe UI', sans-serif; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-      <!-- filled by javascript -->
+    <div id="cv-preview-content">
+      <div class="preview-close">
+        <button id="closePreviewBtn"><i class="fas fa-times"></i> Close</button>
+      </div>
+      <div id="cv-preview-body"></div>
     </div>
   </div>
 
-  <p style="text-align: center; margin-top: 20px; font-size: 0.8rem; color: #6f81a5;"><i class="fas fa-edit"></i> All fields editable · no API · fully client-side</p>
+  <p style="text-align: center; margin-top: 16px; font-size: 0.7rem; color: #6f81a5;"><i class="fas fa-edit"></i> All fields editable · no API · A4 ready</p>
 </div>
 
 <script>
   (function() {
-    // ----- DOM refs -----
+    // DOM refs
     const sections = {
       personal: document.getElementById('section-personal'),
       summary: document.getElementById('section-summary'),
@@ -402,6 +546,10 @@
       additional: document.getElementById('section-additional')
     };
     const categoryBtns = document.querySelectorAll('.category-btn');
+    const layoutBtns = document.querySelectorAll('.layout-btn');
+    let currentLayout = 'classic';
+
+    // fields
     const fullName = document.getElementById('fullName');
     const email = document.getElementById('email');
     const phone = document.getElementById('phone');
@@ -439,56 +587,145 @@
       });
     });
 
-    // ----- build preview HTML from current fields (for PDF/Word) -----
-    function buildCVHTML() {
-      return `
-        <div style="background: white; padding: 30px 30px 20px; font-family: 'Segoe UI', Roboto, sans-serif; color: #1e2a41;">
-          <h1 style="font-size: 2.2rem; font-weight: 600; margin-bottom: 0.2rem; letter-spacing: -0.5px;">${fullName.value || 'Your Name'}</h1>
-          <div style="display: flex; flex-wrap: wrap; gap: 12px 24px; color: #2c4270; margin: 12px 0 18px; border-bottom: 2px solid #eaf0f8; padding-bottom: 14px;">
-            <span><i class="fas fa-envelope" style="margin-right: 6px;"></i> ${email.value || 'email@example.com'}</span>
-            <span><i class="fas fa-phone" style="margin-right: 6px;"></i> ${phone.value || 'phone'}</span>
-            <span><i class="fas fa-map-marker-alt" style="margin-right: 6px;"></i> ${address.value || 'address'}</span>
-            <span><i class="fas fa-link" style="margin-right: 6px;"></i> ${linkedin.value || 'linkedin'}</span>
+    // ----- layout switching -----
+    layoutBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        layoutBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentLayout = this.dataset.layout;
+      });
+    });
+
+    // ----- build A4 HTML with layout variants -----
+    function buildA4HTML(layout = currentLayout) {
+      const name = fullName.value || 'Your Name';
+      const emailVal = email.value || 'email@example.com';
+      const phoneVal = phone.value || 'phone';
+      const addressVal = address.value || 'address';
+      const linkedinVal = linkedin.value || 'linkedin';
+      const summaryVal = summary.value || 'Summary not provided.';
+      const exp1TitleVal = exp1Title.value || 'Job Title';
+      const exp1CompanyVal = exp1Company.value || 'Company';
+      const exp1YearVal = exp1Year.value || '';
+      const exp1DescVal = exp1Desc.value || 'Description';
+      const exp2TitleVal = exp2Title.value || 'Job Title';
+      const exp2CompanyVal = exp2Company.value || 'Company';
+      const exp2YearVal = exp2Year.value || '';
+      const exp2DescVal = exp2Desc.value || 'Description';
+      const eduDegreeVal = eduDegree.value || 'Degree';
+      const eduInstitutionVal = eduInstitution.value || 'Institution';
+      const eduYearVal = eduYear.value || 'Year';
+      const eduExtraVal = eduExtra.value || '';
+      const techSkillsVal = techSkills.value || '—';
+      const softSkillsVal = softSkills.value || '—';
+      const languagesVal = languages.value || '—';
+      const awardsVal = awards.value || '—';
+      const interestsVal = interests.value || '—';
+
+      // common header & footer
+      const header = `
+        <div class="a4-header">
+          <h1>${name}</h1>
+          <div class="contact-info">
+            <span><i class="fas fa-envelope"></i> ${emailVal}</span>
+            <span><i class="fas fa-phone"></i> ${phoneVal}</span>
+            <span><i class="fas fa-map-marker-alt"></i> ${addressVal}</span>
+            <span><i class="fas fa-link"></i> ${linkedinVal}</span>
           </div>
-          <div style="margin-bottom: 20px;">
-            <h3 style="font-weight: 600; color: #0e2b50; border-left: 4px solid #1a4b8a; padding-left: 12px;">Professional Summary</h3>
-            <p style="margin-top: 6px; line-height: 1.6;">${summary.value || 'Summary not provided.'}</p>
-          </div>
-          <div style="margin-bottom: 20px;">
-            <h3 style="font-weight: 600; color: #0e2b50; border-left: 4px solid #1a4b8a; padding-left: 12px;">Experience</h3>
-            <div style="margin-top: 8px;"><strong>${exp1Title.value || 'Job Title'}</strong> – ${exp1Company.value || 'Company'} <span style="float: right;">${exp1Year.value || ''}</span></div>
-            <p style="margin: 4px 0 10px 12px; line-height: 1.5;">${exp1Desc.value || 'Description'}</p>
-            <div style="margin-top: 8px;"><strong>${exp2Title.value || 'Job Title'}</strong> – ${exp2Company.value || 'Company'} <span style="float: right;">${exp2Year.value || ''}</span></div>
-            <p style="margin: 4px 0 0 12px; line-height: 1.5;">${exp2Desc.value || 'Description'}</p>
-          </div>
-          <div style="margin-bottom: 20px;">
-            <h3 style="font-weight: 600; color: #0e2b50; border-left: 4px solid #1a4b8a; padding-left: 12px;">Education</h3>
-            <div><strong>${eduDegree.value || 'Degree'}</strong> – ${eduInstitution.value || 'Institution'} (${eduYear.value || 'Year'})</div>
-            <p style="margin: 4px 0 0 12px;">${eduExtra.value || ''}</p>
-          </div>
-          <div style="margin-bottom: 20px;">
-            <h3 style="font-weight: 600; color: #0e2b50; border-left: 4px solid #1a4b8a; padding-left: 12px;">Skills</h3>
-            <div><strong>Technical:</strong> ${techSkills.value || '—'}</div>
-            <div><strong>Soft:</strong> ${softSkills.value || '—'}</div>
-          </div>
-          <div style="margin-bottom: 8px;">
-            <h3 style="font-weight: 600; color: #0e2b50; border-left: 4px solid #1a4b8a; padding-left: 12px;">Additional</h3>
-            <div><strong>Languages:</strong> ${languages.value || '—'}</div>
-            <div><strong>Awards:</strong> ${awards.value || '—'}</div>
-            <div><strong>Interests:</strong> ${interests.value || '—'}</div>
-          </div>
-          <p style="margin-top: 20px; font-size: 0.7rem; color: #6f7e9e; text-align: center; border-top: 1px solid #e3eaf3; padding-top: 14px;">CV generated via CV Maker · Telegram Mini App</p>
         </div>
       `;
+      const footer = `<div class="a4-footer">CV generated via CV Maker · Telegram Mini App · A4 ready</div>`;
+
+      // build main content based on layout
+      let mainContent = '';
+      if (layout === 'classic') {
+        mainContent = `
+          ${header}
+          <div class="a4-section-title">Professional Summary</div>
+          <p style="margin: 6px 0 12px 0; line-height:1.6;">${summaryVal}</p>
+          <div class="a4-section-title">Experience</div>
+          <div class="a4-experience-item"><span class="title">${exp1TitleVal}</span> – ${exp1CompanyVal} <span class="meta">${exp1YearVal}</span><br><span style="margin-left:12px;font-size:0.9rem;">${exp1DescVal}</span></div>
+          <div class="a4-experience-item" style="margin-top:8px;"><span class="title">${exp2TitleVal}</span> – ${exp2CompanyVal} <span class="meta">${exp2YearVal}</span><br><span style="margin-left:12px;font-size:0.9rem;">${exp2DescVal}</span></div>
+          <div class="a4-section-title">Education</div>
+          <div><strong>${eduDegreeVal}</strong> – ${eduInstitutionVal} (${eduYearVal})<br><span style="margin-left:12px;font-size:0.9rem;">${eduExtraVal}</span></div>
+          <div class="a4-section-title">Skills</div>
+          <div><strong>Technical:</strong> ${techSkillsVal}</div>
+          <div><strong>Soft:</strong> ${softSkillsVal}</div>
+          <div class="a4-section-title">Additional</div>
+          <div><strong>Languages:</strong> ${languagesVal}</div>
+          <div><strong>Awards:</strong> ${awardsVal}</div>
+          <div><strong>Interests:</strong> ${interestsVal}</div>
+          ${footer}
+        `;
+      } else if (layout === 'modern') {
+        // two column with left sidebar
+        mainContent = `
+          ${header}
+          <div class="a4-two-col">
+            <div class="left-col">
+              <div style="margin-bottom:20px;"><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Summary</h3><p style="font-size:0.9rem;line-height:1.5;">${summaryVal}</p></div>
+              <div style="margin-bottom:20px;"><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Skills</h3><div><strong>Tech:</strong> ${techSkillsVal}</div><div><strong>Soft:</strong> ${softSkillsVal}</div></div>
+              <div><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Languages</h3><div>${languagesVal}</div></div>
+            </div>
+            <div class="right-col">
+              <div style="margin-bottom:20px;"><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Experience</h3>
+                <div><strong>${exp1TitleVal}</strong> – ${exp1CompanyVal} <span style="float:right;">${exp1YearVal}</span><br><span style="font-size:0.9rem;">${exp1DescVal}</span></div>
+                <div style="margin-top:10px;"><strong>${exp2TitleVal}</strong> – ${exp2CompanyVal} <span style="float:right;">${exp2YearVal}</span><br><span style="font-size:0.9rem;">${exp2DescVal}</span></div>
+              </div>
+              <div><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Education</h3>
+                <div><strong>${eduDegreeVal}</strong> – ${eduInstitutionVal} (${eduYearVal})<br><span style="font-size:0.9rem;">${eduExtraVal}</span></div>
+              </div>
+              <div style="margin-top:10px;"><h3 style="border-bottom:2px solid #1a4b8a;padding-bottom:4px;">Awards & Interests</h3>
+                <div><strong>Awards:</strong> ${awardsVal}</div>
+                <div><strong>Interests:</strong> ${interestsVal}</div>
+              </div>
+            </div>
+          </div>
+          ${footer}
+        `;
+      } else { // compact
+        mainContent = `
+          ${header}
+          <div style="display:flex;flex-wrap:wrap;gap:12px 24px;border-bottom:1px solid #e2eaf5;padding-bottom:10px;margin-bottom:12px;">
+            <span><strong>Summary:</strong> ${summaryVal}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;">
+            <div><strong>Experience</strong><br>${exp1TitleVal} – ${exp1CompanyVal} (${exp1YearVal})<br><span style="font-size:0.85rem;">${exp1DescVal}</span><br><br>${exp2TitleVal} – ${exp2CompanyVal} (${exp2YearVal})<br><span style="font-size:0.85rem;">${exp2DescVal}</span></div>
+            <div><strong>Education</strong><br>${eduDegreeVal} – ${eduInstitutionVal} (${eduYearVal})<br><span style="font-size:0.85rem;">${eduExtraVal}</span><br><br><strong>Skills</strong><br>Tech: ${techSkillsVal}<br>Soft: ${softSkillsVal}</div>
+          </div>
+          <div style="margin-top:12px;border-top:1px solid #e2eaf5;padding-top:10px;display:flex;flex-wrap:wrap;gap:8px 20px;">
+            <span><strong>Languages:</strong> ${languagesVal}</span>
+            <span><strong>Awards:</strong> ${awardsVal}</span>
+            <span><strong>Interests:</strong> ${interestsVal}</span>
+          </div>
+          ${footer}
+        `;
+      }
+      return `<div class="a4-page">${mainContent}</div>`;
     }
 
-    // ----- download PDF using html2pdf -----
-    document.getElementById('downloadPdfBtn').addEventListener('click', function() {
-      const previewContainer = document.getElementById('cv-preview-container');
-      const previewContent = document.getElementById('cv-preview-content');
-      previewContent.innerHTML = buildCVHTML();
-      previewContainer.style.display = 'block';
+    // ----- show preview overlay -----
+    function showPreview() {
+      const container = document.getElementById('cv-preview-container');
+      const body = document.getElementById('cv-preview-body');
+      body.innerHTML = buildA4HTML(currentLayout);
+      container.style.display = 'flex';
+    }
 
+    document.getElementById('previewBtn').addEventListener('click', showPreview);
+    document.getElementById('closePreviewBtn').addEventListener('click', function() {
+      document.getElementById('cv-preview-container').style.display = 'none';
+    });
+    document.getElementById('cv-preview-container').addEventListener('click', function(e) {
+      if (e.target === this) this.style.display = 'none';
+    });
+
+    // ----- download PDF (A4) -----
+    document.getElementById('downloadPdfBtn').addEventListener('click', function() {
+      const previewBody = document.getElementById('cv-preview-body');
+      previewBody.innerHTML = buildA4HTML(currentLayout);
+      const container = document.getElementById('cv-preview-container');
+      container.style.display = 'flex';
       const opt = {
         margin:        [0.6, 0.6, 0.6, 0.6],
         filename:     'My_CV.pdf',
@@ -496,22 +733,22 @@
         html2canvas:  { scale: 2, letterRendering: true },
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
       };
-      html2pdf().set(opt).from(previewContent).save().then(() => {
-        previewContainer.style.display = 'none';
+      const element = document.getElementById('cv-preview-body');
+      html2pdf().set(opt).from(element).save().then(() => {
+        container.style.display = 'none';
       }).catch(() => {
-        previewContainer.style.display = 'none';
+        container.style.display = 'none';
       });
     });
 
-    // ----- download Word ( .doc ) using Blob -----
+    // ----- download Word -----
     document.getElementById('downloadWordBtn').addEventListener('click', function() {
-      const content = buildCVHTML();
-      // create a full HTML doc with styles for word
+      const content = buildA4HTML(currentLayout);
       const fullDoc = `
         <html>
           <head><meta charset="UTF-8"><title>My CV</title>
           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-          <style>body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 900px; margin: 20px auto; padding: 20px; }</style>
+          <style>body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 1000px; margin: 20px auto; padding: 20px; } .a4-page { background: white; }</style>
           </head>
           <body>${content}</body>
         </html>
@@ -527,7 +764,7 @@
       URL.revokeObjectURL(url);
     });
 
-    // ----- reset to defaults (optional) -----
+    // ----- reset -----
     document.getElementById('resetBtn').addEventListener('click', function() {
       if (!confirm('Reset all fields to default examples?')) return;
       fullName.value = 'Alexandra Rivera';
@@ -558,4 +795,4 @@
   })();
 </script>
 </body>
-                                                                                           </html>
+</html>
