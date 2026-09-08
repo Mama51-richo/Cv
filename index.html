@@ -68,7 +68,12 @@ textarea{min-height:100px;resize:vertical}
  #screen-preview{display:block!important;padding:0}.preview-wrap{padding:0;background:#fff}.cv-paper{box-shadow:none}
  @page{size:A4;margin:0}
 }
-</style>
+
+/* Full-screen workspace + ATS enhancements */
+.app{max-width:none;width:100%;min-height:100vh}.hero{max-width:1100px;margin:0 auto}.features{max-width:1100px;margin:18px auto}.menu{max-width:1100px;margin:auto}.template-grid{max-width:1100px;margin:auto}.preview-wrap{max-width:1200px;margin:auto}.card,.repeat-item{box-shadow:0 3px 12px rgba(20,48,80,.06)}
+.fullscreen-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.advanced-title{font-size:17px;font-weight:850;margin:20px 0 9px}.import-area{background:#f7fbff;border:2px dashed #b9d6f2;border-radius:14px;padding:25px;text-align:center}.import-area input{display:none}.import-area label{display:inline-block;background:var(--primary);color:#fff;border-radius:10px;padding:12px 18px;font-weight:800;cursor:pointer}.import-preview{white-space:pre-wrap;max-height:360px;overflow:auto;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:13px;font-size:12px;line-height:1.5}
+@media(max-width:800px){.fullscreen-grid{grid-template-columns:1fr}.app{width:100%}}
+.cv-paper.template-academic .cv-head{text-align:center;font-family:Georgia,serif}.cv-paper.template-tech .cv-head{border-left:5px solid #087cf0;padding-left:12px}.cv-paper.template-academic .cv-section h2{font-family:Georgia,serif}.cv-paper.template-tech .cv-section h2{color:#087cf0}</style>
 </head>
 <body>
 <div class="app">
@@ -98,11 +103,18 @@ textarea{min-height:100px;resize:vertical}
   <h2 class="section-title">CV Maker</h2><p class="hint">Create, edit and manage your professional CVs.</p>
   <div class="menu">
     <button class="menu-card" onclick="newCV()"><div class="menu-icon">👤</div><div><b>Create New CV</b><small>Start a CV from scratch</small></div><span class="arrow">›</span></button>
+    <button class="menu-card" onclick="showScreen('import')"><div class="menu-icon">📥</div><div><b>Import Existing CV</b><small>Upload PDF, DOCX, TXT, RTF or HTML</small></div><span class="arrow">›</span></button>
     <button class="menu-card" onclick="showScreen('saved')"><div class="menu-icon">📄</div><div><b>My CVs</b><small>View, edit or download</small></div><span class="arrow">›</span></button>
     <button class="menu-card" onclick="showScreen('templates')"><div class="menu-icon">🎨</div><div><b>Templates</b><small>Choose a professional design</small></div><span class="arrow">›</span></button>
     <button class="menu-card" onclick="showScreen('help')"><div class="menu-icon">❓</div><div><b>Help & Tips</b><small>Build a stronger CV</small></div><span class="arrow">›</span></button>
   </div>
   <div class="save-note">✓ No server or API required. Your CV data stays in this browser/device.</div>
+</section>
+
+<section id="screen-import" class="screen">
+  <h2 class="section-title">Import Existing CV</h2><p class="hint">Upload an existing text-based CV and turn the extracted content into editable categories.</p>
+  <div class="card"><div class="import-area"><div style="font-size:42px">📄</div><h3>Upload your document</h3><p class="hint">Supported: PDF, DOCX, TXT, RTF, HTML and other text-readable files. No document is uploaded to a server.</p><label for="cvFile">Choose CV File</label><input id="cvFile" type="file" accept=".pdf,.docx,.txt,.rtf,.html,.htm,.md,.csv" onchange="importCVFile(event)"><div id="importStatus" class="hint" style="margin-top:12px"></div></div></div>
+  <div id="importResult" class="card hidden"><div class="sectionbar"><h2>Extracted Content</h2></div><div id="importText" class="import-preview"></div><div class="save-note">Review the extracted information after import. Automatic section detection is a convenience feature and cannot guarantee perfect categorization.</div><button class="btn primary full" style="margin-top:12px" onclick="useImportedCV()">Import & Edit All Categories</button></div>
 </section>
 
 <section id="screen-form" class="screen">
@@ -163,6 +175,8 @@ textarea{min-height:100px;resize:vertical}
     <div class="template-card" data-template="classic" onclick="selectTemplate('classic',this)"><div class="mini-cv"><div class="mc-head">YOUR NAME</div><hr>PROFILE<br><br>EXPERIENCE<br>Education<br>Skills</div><b>Clean Classic</b></div>
     <div class="template-card" data-template="green" onclick="selectTemplate('green',this)"><div class="mini-cv" style="background:#edf8f4"><div class="mc-head" style="color:#16825b">YOUR NAME</div><hr>PROFILE<br><br>EXPERIENCE<br>Education<br>Skills</div><b>Fresh Green</b></div>
     <div class="template-card" data-template="dark" onclick="selectTemplate('dark',this)"><div class="mini-cv mini-dark"><div class="mc-head">YOUR NAME</div><hr>PROFILE<br><br>EXPERIENCE<br>Education<br>Skills</div><b>Executive Dark</b></div>
+    <div class="template-card" data-template="academic" onclick="selectTemplate('academic',this)"><div class="mini-cv"><div class="mc-head">YOUR NAME</div><hr>EDUCATION<br>RESEARCH<br>PUBLICATIONS<br>EXPERIENCE</div><b>Academic</b></div>
+    <div class="template-card" data-template="tech" onclick="selectTemplate('tech',this)"><div class="mini-cv mini-blue"><div class="mc-head">YOUR NAME</div><hr>SKILLS<br>EXPERIENCE<br>PROJECTS<br>EDUCATION</div><b>Tech Professional</b></div>
   </div>
   <button class="btn primary full" style="margin-top:15px" onclick="showScreen('form')">Use Selected Template</button>
 </section>
@@ -252,12 +266,12 @@ function newCV(){
 function saveAnd(next){collectForm();persistCurrent();showScreen(next)}
 function finishCV(){collectForm();data.updated=new Date().toISOString();persistCurrent();renderCV();showScreen("preview")}
 function collectForm(){
- ["fullName","title","email","phone","location","linkedin","summary","certifications","projects","references"].forEach(id=>{const e=document.getElementById(id);if(e)data[id]=e.value.trim()});
+ ["fullName","title","email","phone","location","linkedin","summary","certifications","projects","references","awards","publications","volunteer","memberships","interests","additional"].forEach(id=>{const e=document.getElementById(id);if(e)data[id]=e.value.trim()});
  data.skills=[...data.skills];data.languages=[...data.languages];data.template=selectedTemplate;data.photo=photoData;
  data.updated=new Date().toISOString();
 }
 function loadForm(){
- ["fullName","title","email","phone","location","linkedin","summary","certifications","projects","references"].forEach(id=>{const e=document.getElementById(id);if(e)e.value=data[id]||""});
+ ["fullName","title","email","phone","location","linkedin","summary","certifications","projects","references","awards","publications","volunteer","memberships","interests","additional"].forEach(id=>{const e=document.getElementById(id);if(e)e.value=data[id]||""});
  photoData=data.photo||"";
  const img=document.getElementById("photoPreview");img.src=photoData||avatarSVG();
  renderTags();
@@ -356,6 +370,12 @@ function renderCV(){
  const langs=(d.languages||[]).map(x=>`<span class="cv-line">• ${esc(x)}</span>`).join("");
  const certs=lines(d.certifications).map(x=>`<p>• ${esc(x)}</p>`).join("");
  const projects=lines(d.projects).map(x=>`<p>• ${esc(x)}</p>`).join("");
+ const awards=lines(d.awards).map(x=>`<p>• ${esc(x)}</p>`).join("");
+ const publications=lines(d.publications).map(x=>`<p>• ${esc(x)}</p>`).join("");
+ const volunteer=lines(d.volunteer).map(x=>`<p>• ${esc(x)}</p>`).join("");
+ const memberships=lines(d.memberships).map(x=>`<p>• ${esc(x)}</p>`).join("");
+ const interests=lines(d.interests).map(x=>`<p>• ${esc(x)}</p>`).join("");
+ const additional=lines(d.additional).map(x=>`<p>• ${esc(x)}</p>`).join("");
  const refs=lines(d.references).map(x=>`<p>${esc(x)}</p>`).join("");
  const ex=(d.experience||[]).map(x=>`<div class="job"><div class="job-title">${esc(x.jobTitle||"Position")}</div><div class="job-meta">${esc(x.company)}${x.location?" · "+esc(x.location):""}${x.start?" · "+esc(x.start)+(x.end?" — "+esc(x.end):""): ""}</div>${bulletList(x.description)}</div>`).join("");
  const edu=(d.education||[]).map(x=>`<div class="job"><div class="job-title">${esc(x.degree||"Qualification")}</div><div class="job-meta">${esc(x.school)}${x.location?" · "+esc(x.location):""}${x.year?" · "+esc(x.year):""}</div>${x.details?`<p>${esc(x.details).replace(/\n/g,"<br>")}</p>`:""}</div>`).join("");
@@ -373,6 +393,12 @@ function renderCV(){
   ${edu?`<div class="cv-section"><h2>Education</h2>${edu}</div>`:""}
   ${certs?`<div class="cv-section"><h2>Certifications</h2>${certs}</div>`:""}
   ${projects?`<div class="cv-section"><h2>Projects & Achievements</h2>${projects}</div>`:""}
+  ${awards?`<div class="cv-section"><h2>Awards & Honors</h2>${awards}</div>`:""}
+  ${publications?`<div class="cv-section"><h2>Publications & Research</h2>${publications}</div>`:""}
+  ${volunteer?`<div class="cv-section"><h2>Volunteer & Leadership</h2>${volunteer}</div>`:""}
+  ${memberships?`<div class="cv-section"><h2>Professional Memberships</h2>${memberships}</div>`:""}
+  ${interests?`<div class="cv-section"><h2>Professional Interests</h2>${interests}</div>`:""}
+  ${additional?`<div class="cv-section"><h2>Additional Information</h2>${additional}</div>`:""}
   ${refs?`<div class="cv-section"><h2>References</h2>${refs}</div>`:""}
  </article>`;
 }
@@ -403,6 +429,40 @@ function downloadSavedPDF(i){
  data={...blankCV(),...list[i]};selectedTemplate=data.template||"modern";renderCV();window.print();
  data=old;selectedTemplate=oldT;
 }
+
+let importedCVText="";
+async function importCVFile(ev){
+ const f=ev.target.files[0]; if(!f)return; const st=document.getElementById("importStatus"); st.textContent="Reading "+f.name+"…";
+ try{
+  const ext=f.name.toLowerCase().split(".").pop(); let text="";
+  if(ext==="pdf") text=await readPDFFile(f);
+  else if(ext==="docx") text=await readDOCXFile(f);
+  else text=await f.text();
+  importedCVText=String(text||"").replace(/\r/g,"").replace(/[ \t]+\n/g,"\n").replace(/\n{3,}/g,"\n\n").trim();
+  document.getElementById("importText").textContent=importedCVText.slice(0,40000);document.getElementById("importResult").classList.remove("hidden");st.textContent="✓ Text extracted locally. Review after import.";
+ }catch(e){st.textContent="This file could not be read by the browser. Try PDF, DOCX or TXT.";toast("Document import failed")}
+}
+function loadExternalScript(src){return new Promise((resolve,reject)=>{const s=document.createElement("script");s.src=src;s.onload=resolve;s.onerror=reject;document.head.appendChild(s)})}
+async function readDOCXFile(file){if(!window.mammoth)await loadExternalScript("https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js");const r=await window.mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});return r.value}
+async function readPDFFile(file){
+ if(!window.pdfjsLib){await loadExternalScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");}
+ window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+ const pdf=await window.pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;let out=[];
+ for(let n=1;n<=pdf.numPages;n++){const page=await pdf.getPage(n),c=await page.getTextContent();out.push(c.items.map(x=>x.str).join(" "))} return out.join("\n");
+}
+function extractSection(text,names){const p=names.map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|");const re=new RegExp("(^|\n)\s*(?:"+p+")\s*:?\s*(?:\n|$)","i");const m=re.exec(text);if(!m)return "";const start=m.index+m[0].length;const next=new RegExp("\n\s*(?:professional summary|summary|profile|objective|work experience|professional experience|experience|employment|education|skills|technical skills|soft skills|languages|certifications|training|projects|achievements|awards|honors|publications|research|volunteer|leadership|memberships|references|additional information)\s*:?[ \t]*(?:\n|$)","ig");next.last=start;const nm=next.exec(text);return text.slice(start,nm?nm.index:text.length).trim()}
+function useImportedCV(){
+ if(!importedCVText)return; const t=importedCVText,d=blankCV();
+ d.email=(t.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)||[])[0]||""; d.phone=(t.match(/(?:\+?\d[\d\s().-]{7,}\d)/)||[])[0]||"";
+ d.summary=extractSection(t,["professional summary","summary","profile","objective"]);d.certifications=extractSection(t,["certifications","certificates","training"]);d.projects=extractSection(t,["projects","achievements"]);d.awards=extractSection(t,["awards","honors"]);d.publications=extractSection(t,["publications","research"]);d.volunteer=extractSection(t,["volunteer","leadership"]);d.memberships=extractSection(t,["professional memberships","memberships"]);d.references=extractSection(t,["references"]);d.additional=extractSection(t,["additional information"]);
+ const sk=extractSection(t,["skills","technical skills","core competencies"]);if(sk)d.skills=sk.split(/[,;\n•|]+/).map(x=>x.trim()).filter(Boolean).slice(0,50);
+ const la=extractSection(t,["languages","language skills"]);if(la)d.languages=la.split(/[,;\n•|]+/).map(x=>x.trim()).filter(Boolean).slice(0,20);
+ const first=t.split("\n").map(x=>x.trim()).filter(Boolean);if(first[0])d.fullName=first[0];if(first[1]&&!/[@\d]|linkedin|http/i.test(first[1]))d.title=first[1];
+ const ex=extractSection(t,["work experience","professional experience","experience","employment"]);if(ex)d.experience=[{jobTitle:"",company:"",location:"",start:"",end:"",description:ex}];
+ const ed=extractSection(t,["education","academic background","qualifications"]);if(ed)d.education=[{degree:"",school:"",location:"",year:"",details:ed}];
+ data=d;selectedTemplate="modern";loadForm();renderExperience();renderEducation();renderTags();syncTemplates();showScreen("form");toast("Imported. Review and edit every category.");
+}
+
 function telegramInit(){
  try{
   if(window.Telegram&&window.Telegram.WebApp){
