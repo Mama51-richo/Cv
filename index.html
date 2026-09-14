@@ -3,110 +3,723 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>In-Browser AI Chatbot</title>
+    <title>SwiftLogistics - Unified Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #18181b; color: #f4f4f5; display: flex; flex-direction: column; height: 100vh; margin: 0; }
-        header { background: #27272a; padding: 15px; text-align: center; border-bottom: 1px solid #3f3f46; }
-        h1 { margin: 0; font-size: 1.2rem; color: #a1a1aa; }
-        #status { font-size: 0.85rem; color: #38bdf8; margin-top: 5px; }
-        #chat { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        .msg { padding: 12px 16px; border-radius: 12px; max-width: 75%; line-height: 1.5; font-size: 0.95rem; }
-        .user { background: #2563eb; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-        .ai { background: #27272a; color: #f4f4f5; align-self: flex-start; border-bottom-left-radius: 2px; }
-        #controls { padding: 20px; display: flex; gap: 10px; background: #27272a; border-top: 1px solid #3f3f46; }
-        input { flex: 1; padding: 12px; border: 1px solid #3f3f46; border-radius: 8px; background: #09090b; color: white; font-size: 1rem; }
-        input:focus { outline: 2px solid #2563eb; }
-        button { padding: 12px 24px; border: none; border-radius: 8px; background: #2563eb; color: white; font-weight: bold; cursor: pointer; font-size: 1rem; transition: background 0.2s; }
-        button:disabled { background: #52525b; cursor: not-allowed; }
-        button:hover:not(:disabled) { background: #1d4ed8; }
+        body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     </style>
 </head>
 <body>
+    <div id="root"></div>
 
-    <header>
-        <h1>My Local Browser AI</h1>
-        <div id="status">Loading AI engine... (This takes a few seconds)</div>
-    </header>
+    <!-- Load app dependencies needed inside JSX scope -->
+    <script type="text/babel" data-presets="react">
+        const { useState, useEffect, createContext, useContext, Fragment } = React;
 
-    <div id="chat">
-        <div class="msg ai">Hello! I am an AI running 100% locally in your browser. No data leaves your machine. Once the initial download completes, ask me anything!</div>
-    </div>
+        // --- Simple inline SVG icons (no external library needed) ---
+        const Icon = ({ path, className = "w-4 h-4", ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+                <path d={path} />
+            </svg>
+        );
 
-    <div id="controls">
-        <input type="text" id="userInput" placeholder="Type a message..." disabled onkeypress="if(event.key === 'Enter') sendMessage()">
-        <button id="sendBtn" onclick="sendMessage()" disabled>Send</button>
-    </div>
+        const Icons = {
+            Truck: (p) => <Icon {...p} path="M10 17h4V5H2v12h3m9-12l1 4h6l2 3v5h-3M9 17a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm11 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0z" />,
+            MapPin: (p) => <Icon {...p} path="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z M12 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />,
+            Phone: (p) => <Icon {...p} path="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />,
+            User: (p) => <Icon {...p} path="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />,
+            Package: (p) => <Icon {...p} path="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z M3.27 6.96L12 12.01l8.73-5.05 M12 22.08V12" />,
+            CheckCircle: (p) => <Icon {...p} path="M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4L12 14.01l-3-3" />,
+            Clock: (p) => <Icon {...p} path="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 6v6l4 2" />,
+            AlertCircle: (p) => <Icon {...p} path="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 8v4 M12 16h.01" />,
+            Search: (p) => <Icon {...p} path="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.35-4.35" />,
+            Printer: (p) => <Icon {...p} path="M6 9V2h12v7 M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2 M6 14h12v8H6z" />,
+            Navigation: (p) => <Icon {...p} path="M3 11l19-9-9 19-2-8-8-2z" />,
+            Send: (p) => <Icon {...p} path="M22 2L11 13 M22 2l-7 20-4-9-9-4 20-7z" />,
+            Menu: (p) => <Icon {...p} path="M3 12h18 M3 6h18 M3 18h18" />,
+            X: (p) => <Icon {...p} path="M18 6L6 18 M6 6l12 12" />,
+            MessageSquare: (p) => <Icon {...p} path="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
+            ArrowRight: (p) => <Icon {...p} path="M5 12h14 M12 5l7 7-7 7" />,
+            Play: (p) => <Icon {...p} path="M5 3l14 9-14 9V3z" />,
+            Filter: (p) => <Icon {...p} path="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />,
+            LogOut: (p) => <Icon {...p} path="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9" />,
+            Shield: (p) => <Icon {...p} path="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
+        };
+        const { Truck, MapPin, Phone, User, Package, CheckCircle, Clock, AlertCircle, Search, Printer, Navigation, Send, Menu, X, MessageSquare, ArrowRight, Play, Filter, LogOut, Shield } = Icons;
 
-    <!-- Import Transformers.js directly using a script module -->
-    <script type="module">
-        import { pipeline } from 'https://jsdelivr.net';
+        // ============ DATABASE ============
+        const DB_KEY = 'logistics_db_v1';
+        const initDB = () => {
+            const existing = localStorage.getItem(DB_KEY);
+            if (existing) return JSON.parse(existing);
+            return {
+                users: [
+                    { id: 1, name: 'Admin Agent', phone: '+1000000001', role: 'admin' },
+                    { id: 2, name: 'James Mwangi', phone: '+254711000001', role: 'driver' },
+                    { id: 3, name: 'Peter Otieno', phone: '+254711000002', role: 'host' },
+                ],
+                vehicles: [
+                    { id: 1, plateNumber: 'KDA 001X', hostName: 'Peter Otieno', driverName: 'James Mwangi', operationalStatus: 'Active' },
+                    { id: 2, plateNumber: 'KDB 442Y', hostName: 'Mary Wanjiku', driverName: 'John Kamau', operationalStatus: 'Active' },
+                    { id: 3, plateNumber: 'KDC 789Z', hostName: 'Alice Njeri', driverName: 'David Ochieng', operationalStatus: 'Active' },
+                ],
+                bookings: [],
+                telemetry: {},
+                smsLog: [],
+                receipts: [],
+            };
+        };
 
-        let generator = null;
-        const statusEl = document.getElementById('status');
-        const inputEl = document.getElementById('userInput');
-        const btnEl = document.getElementById('sendBtn');
+        const useDB = () => {
+            const [db, setDb] = useState(initDB);
+            useEffect(() => { localStorage.setItem(DB_KEY, JSON.stringify(db)); }, [db]);
+            const update = (fn) => setDb(prev => {
+                const next = JSON.parse(JSON.stringify(prev));
+                fn(next);
+                return next;
+            });
+            const generateRef = () => {
+                const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+                let s = '';
+                for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
+                return `REF-${s}`;
+            };
+            return { db, update, generateRef };
+        };
 
-        // Initialize the AI Model
-        async function initAI() {
-            try {
-                statusEl.innerText = "Downloading AI Model (~900MB)... Please wait.";
-                
-                // Using a lightweight chat model
-                generator = await pipeline('text-generation', 'Xenova/Qwen1.5-0.5B-Chat');
-                
-                statusEl.innerText = "⚡ AI Ready & Running Locally!";
-                inputEl.disabled = false;
-                btnEl.disabled = false;
-            } catch (err) {
-                statusEl.innerText = "Error loading AI. Make sure you use a modern browser like Chrome/Edge.";
-                console.error(err);
+        const AppContext = createContext(null);
+        const useApp = () => useContext(AppContext);
+
+        // ============ UI COMPONENTS ============
+        const Badge = ({ status }) => {
+            const styles = {
+                'Pending Payment': 'bg-yellow-100 text-yellow-800 border-yellow-300',
+                'Paid / Awaiting Assignment': 'bg-emerald-100 text-emerald-800 border-emerald-300',
+                'Paid': 'bg-emerald-100 text-emerald-800 border-emerald-300',
+                'Assigned': 'bg-blue-100 text-blue-800 border-blue-300',
+                'En-Route': 'bg-indigo-100 text-indigo-800 border-indigo-300',
+                'Boarded': 'bg-emerald-100 text-emerald-800 border-emerald-300',
+            };
+            return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles[status] || 'bg-gray-100 text-gray-800 border-gray-300'}`}>{status}</span>;
+        };
+
+        const Card = ({ children, className = '' }) => (
+            <div className={`bg-white rounded-xl shadow-sm border border-slate-200 ${className}`}>{children}</div>
+        );
+
+        const Button = ({ children, variant = 'primary', className = '', ...props }) => {
+            const variants = {
+                primary: 'bg-blue-600 hover:bg-blue-700 text-white',
+                emerald: 'bg-emerald-600 hover:bg-emerald-700 text-white',
+                dark: 'bg-slate-800 hover:bg-slate-900 text-white',
+                outline: 'border border-slate-300 hover:bg-slate-50 text-slate-700',
+                warning: 'bg-yellow-500 hover:bg-yellow-600 text-white',
+            };
+            return <button className={`px-4 py-2.5 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 ${variants[variant]} ${className}`} {...props}>{children}</button>;
+        };
+
+        const Input = ({ label, ...props }) => (
+            <div>
+                {label && <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>}
+                <input className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" {...props} />
+            </div>
+        );
+
+        const Select = ({ label, children, ...props }) => (
+            <div>
+                {label && <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>}
+                <select className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" {...props}>{children}</select>
+            </div>
+        );
+
+        // ============ CUSTOMER APP ============
+        const CustomerApp = ({ setSmsLog }) => {
+            const { db, update, generateRef } = useApp();
+            const [view, setView] = useState('book');
+            const [form, setForm] = useState({ name: '', phone: '', pickup: '', destination: '' });
+            const [submittedRef, setSubmittedRef] = useState(null);
+            const [trackRef, setTrackRef] = useState('');
+            const [trackResult, setTrackResult] = useState(null);
+            const [pickupSuggestions, setPickupSuggestions] = useState([]);
+            const [destSuggestions, setDestSuggestions] = useState([]);
+
+            const NAIROBI_PLACES = ['Jomo Kenyatta International Airport, Nairobi','Westlands Shopping Mall, Nairobi','Kenyatta Avenue, Nairobi CBD','Karen Shopping Centre, Nairobi','Two Rivers Mall, Ruaka','The Hub Karen, Nairobi','Nairobi Railway Station, CBD','Village Market, Gigiri','Yaya Centre, Kilimani','Garden City Mall, Thika Road','Nakuru Town Centre','Mombasa Moi International Airport','Kisumu Bus Terminal','Eldoret Town, Uganda Road','Machakos Country Bus Station'];
+            const filterPlaces = (q) => !q || q.length < 2 ? [] : NAIROBI_PLACES.filter(p => p.toLowerCase().includes(q.toLowerCase())).slice(0, 5);
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                const ref = generateRef();
+                const newBooking = { id: Date.now(), refNumber: ref, name: form.name, phone: form.phone, pickupText: form.pickup, destinationText: form.destination, status: 'Pending Payment', channel: 'Web', vehicleAssignedId: null, boarded: false, timestamp: new Date().toISOString() };
+                update(d => { d.bookings.push(newBooking); });
+                setSubmittedRef(newBooking);
+                setSmsLog(prev => [...prev, { to: form.phone, message: `Dear ${form.name}, your booking ${ref} from ${form.pickup} to ${form.destination} is received. Pay via M-Pesa Paybill 400200, Acc: ${ref}.`, time: new Date().toISOString() }]);
+            };
+
+            const handleTrack = () => {
+                const booking = db.bookings.find(b => b.refNumber.toLowerCase() === trackRef.trim().toLowerCase());
+                setTrackResult(booking || 'not-found');
+            };
+
+            const viewedBooking = trackResult && trackResult !== 'not-found' ? trackResult : null;
+            const liveBooking = viewedBooking ? db.bookings.find(b => b.refNumber === viewedBooking.refNumber) : null;
+            const vehicle = liveBooking?.vehicleAssignedId ? db.vehicles.find(v => v.id === liveBooking.vehicleAssignedId) : null;
+            const telemetry = vehicle ? db.telemetry[vehicle.id] : null;
+
+            if (submittedRef) {
+                return (
+                    <div className="max-w-lg mx-auto p-4">
+                        <Card className="p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center"><CheckCircle className="w-6 h-6 text-emerald-600" /></div>
+                                <div><h2 className="text-lg font-bold text-slate-800">Booking Confirmed</h2><p className="text-sm text-slate-500">Payment instructions sent via SMS</p></div>
+                            </div>
+                            <div className="bg-slate-900 rounded-lg p-4 mb-4">
+                                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Reference Number</p>
+                                <p className="text-2xl font-mono font-bold text-white">{submittedRef.refNumber}</p>
+                            </div>
+                            <div className="space-y-2 text-sm mb-4">
+                                <div className="flex justify-between py-2 border-b border-slate-100"><span className="text-slate-500">Traveler</span><span className="font-medium text-slate-800">{submittedRef.name}</span></div>
+                                <div className="flex justify-between py-2 border-b border-slate-100"><span className="text-slate-500">Pickup</span><span className="font-medium text-slate-800 text-right max-w-[60%]">{submittedRef.pickupText}</span></div>
+                                <div className="flex justify-between py-2 border-b border-slate-100"><span className="text-slate-500">Destination</span><span className="font-medium text-slate-800 text-right max-w-[60%]">{submittedRef.destinationText}</span></div>
+                                <div className="flex justify-between py-2"><span className="text-slate-500">Status</span><Badge status={submittedRef.status} /></div>
+                            </div>
+                            <Button className="w-full" onClick={() => { setTrackRef(submittedRef.refNumber); setSubmittedRef(null); setView('track'); }}>
+                                <Navigation className="w-4 h-4" /> Track This Trip
+                            </Button>
+                        </Card>
+                    </div>
+                );
             }
-        }
 
-        // Handle sending messages
-        window.sendMessage = async function() {
-            const text = inputEl.value.trim();
-            if (!text || !generator) return;
+            if (view === 'track') {
+                return (
+                    <div className="max-w-lg mx-auto p-4">
+                        <Card className="p-6">
+                            <h2 className="text-lg font-bold text-slate-800 mb-4">Track Your Trip</h2>
+                            <div className="flex gap-2 mb-4">
+                                <input value={trackRef} onChange={e => setTrackRef(e.target.value)} placeholder="REF-XXXXXX" className="flex-1 px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                <Button onClick={handleTrack}><Search className="w-4 h-4" /></Button>
+                            </div>
+                            {trackResult === 'not-found' && <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700 flex items-center gap-2"><AlertCircle className="w-4 h-4" /> No booking found with that reference.</div>}
+                            {liveBooking && (
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between"><span className="text-xs font-mono text-slate-500">{liveBooking.refNumber}</span><Badge status={liveBooking.status} /></div>
+                                    {vehicle && telemetry?.started && (
+                                        <div className="bg-slate-900 rounded-lg p-4">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div className="flex items-center gap-2"><div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" /><span className="text-xs text-emerald-400 font-medium">LIVE TRACKING</span></div>
+                                                <span className="text-xs text-slate-400 font-mono">{vehicle.plateNumber}</span>
+                                            </div>
+                                            <div className="relative h-40 bg-slate-800 rounded-lg overflow-hidden">
+                                                <div className="absolute inset-0 opacity-20" style={{backgroundImage: 'linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px)', backgroundSize: '20px 20px'}} />
+                                                <div className="absolute" style={{left: `${10 + telemetry.progress * 0.8}%`, top: '50%', transform: 'translate(-50%, -50%)', transition: 'left 1s linear'}}>
+                                                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center shadow-lg ring-4 ring-blue-500/30"><Truck className="w-4 h-4 text-white" /></div>
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-between text-xs text-slate-400 mt-2"><span>📍 Pickup</span><span>{telemetry.progress}%</span><span>🎯 Drop-off</span></div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </Card>
+                    </div>
+                );
+            }
 
-            appendMessage(text, 'user');
-            inputEl.value = '';
-            inputEl.disabled = true;
-            btnEl.disabled = true;
-            statusEl.innerText = "AI is thinking...";
+            return (
+                <div className="max-w-lg mx-auto p-4">
+                    <Card className="p-6">
+                        <div className="mb-6"><h2 className="text-xl font-bold text-slate-800">Book Your Journey</h2><p className="text-sm text-slate-500 mt-1">Fill in your travel details below</p></div>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <Input label="Traveler Name" required value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Enter full name" />
+                            <Input label="Phone Number" required value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder="+254 7XX XXX XXX" />
+                            <div className="relative">
+                                <Input label="Pickup Address" required value={form.pickup} onChange={e => { setForm({...form, pickup: e.target.value}); setPickupSuggestions(filterPlaces(e.target.value)); }} placeholder="Start typing location..." />
+                                {pickupSuggestions.length > 0 && (
+                                    <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-auto">
+                                        {pickupSuggestions.map(s => (<button key={s} type="button" onClick={() => { setForm({...form, pickup: s}); setPickupSuggestions([]); }} className="w-full text-left px-3.5 py-2.5 text-sm hover:bg-slate-50 flex items-center gap-2 border-b border-slate-50 last:border-0"><MapPin className="w-3.5 h-3.5 text-slate-400" /> {s}</button>))}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="relative">
+                                <Input label="Destination Location" required value={form.destination} onChange={e => { setForm({...form, destination: e.target.value}); setDestSuggestions(filterPlaces(e.target.value)); }} placeholder="Start typing destination..." />
+                                {destSuggestions.length > 0 && (
+                                    <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-auto">
+                                        {destSuggestions.map(s => (<button key={s} type="button" onClick={() => { setForm({...form, destination: s}); setDestSuggestions([]); }} className="w-full text-left px-3.5 py-2.5 text-sm hover:bg-slate-50 flex items-center gap-2 border-b border-slate-50 last:border-0"><MapPin className="w-3.5 h-3.5 text-slate-400" /> {s}</button>))}
+                                    </div>
+                                )}
+                            </div>
+                            <Button type="submit" className="w-full"><Package className="w-4 h-4" /> Submit Booking</Button>
+                            <p className="text-xs text-slate-400 text-center">You'll receive an SMS with payment instructions</p>
+                        </form>
+                        <div className="mt-4 pt-4 border-t border-slate-100 text-center">
+                            <button onClick={() => setView('track')} className="text-sm text-blue-600 hover:text-blue-700 font-medium">Already booked? Track your trip →</button>
+                        </div>
+                    </Card>
+                </div>
+            );
+        };
 
-            try {
-                // Format prompt for chat template
-                const messages = [{ role: "user", content: text }];
-                
-                const output = await generator(messages, { 
-                    max_new_tokens: 150,
-                    temperature: 0.7
+        // ============ USSD ============
+        const USSDSimulator = ({ setSmsLog }) => {
+            const { update, generateRef } = useApp();
+            const [screen, setScreen] = useState('idle');
+            const [dialed, setDialed] = useState('');
+            const [step, setStep] = useState(0);
+            const [input, setInput] = useState('');
+            const [data, setData] = useState({ name: '', phone: '', pickup: '', destination: '' });
+            const [session, setSession] = useState([]);
+            const steps = [
+                { key: 'name', label: 'Welcome to SwiftLogistics.\nEnter your Name:', placeholder: 'e.g. John Doe' },
+                { key: 'phone', label: 'Enter your Phone Number:', placeholder: '+2547XXXXXXXX' },
+                { key: 'pickup', label: 'Enter Pickup Location:', placeholder: 'e.g. Westlands' },
+                { key: 'destination', label: 'Enter Destination:', placeholder: 'e.g. Mombasa' },
+            ];
+            const handleDial = () => {
+                if (dialed.trim() === '*123#') { setScreen('step'); setStep(0); setSession(['*123#']); }
+                else { setSession(prev => [...prev, `${dialed} → Invalid shortcode`]); }
+                setDialed('');
+            };
+            const handleSend = () => {
+                if (!input.trim()) return;
+                const curStep = steps[step];
+                setSession(prev => [...prev, input]);
+                const newData = { ...data, [curStep.key]: input };
+                setData(newData);
+                setInput('');
+                if (step < steps.length - 1) setStep(step + 1);
+                else {
+                    const ref = generateRef();
+                    const newBooking = { id: Date.now(), refNumber: ref, name: newData.name, phone: newData.phone, pickupText: newData.pickup, destinationText: newData.destination, status: 'Pending Payment', channel: 'USSD', vehicleAssignedId: null, boarded: false, timestamp: new Date().toISOString() };
+                    update(d => { d.bookings.push(newBooking); });
+                    setSession(prev => [...prev, `✓ Ref: ${ref}`]);
+                    setSmsLog(prev => [...prev, { to: newData.phone, message: `SwiftLogistics: Booking ${ref} confirmed. Pay KES 1,500 via M-Pesa Paybill 400200, Acc ${ref}.`, time: new Date().toISOString() }]);
+                    setScreen('sent');
+                }
+            };
+            const reset = () => { setScreen('idle'); setStep(0); setInput(''); setData({ name: '', phone: '', pickup: '', destination: '' }); setSession([]); setDialed(''); };
+
+            return (
+                <div className="max-w-md mx-auto p-4">
+                    <Card className="overflow-hidden">
+                        <div className="bg-slate-900 p-4">
+                            <div className="flex items-center justify-between text-white/70 text-[10px] mb-2 px-2"><span>9:41</span><span>MTN · 4G ▮▮▮</span></div>
+                            <div className="bg-slate-800 rounded-2xl p-3 min-h-[400px] flex flex-col">
+                                <div className="text-center text-white/50 text-xs mb-4 font-mono">USSD GATEWAY · *123#</div>
+                                {screen === 'idle' && (
+                                    <div className="flex-1 flex flex-col">
+                                        <div className="flex-1 bg-slate-900/50 rounded-xl p-4 font-mono text-emerald-400 text-xs overflow-auto">
+                                            <p className="text-slate-500">// USSD Engine Ready</p>
+                                            <p className="mt-2">Dial *123# to start a session.</p>
+                                            {session.map((s, i) => <p key={i} className="mt-1 text-emerald-300">&gt; {s}</p>)}
+                                        </div>
+                                        <div className="mt-3 flex gap-2">
+                                            <input value={dialed} onChange={e => setDialed(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleDial()} placeholder="*123#" className="flex-1 bg-slate-900 text-white font-mono text-sm px-3 py-2.5 rounded-lg border border-slate-700 focus:outline-none focus:border-blue-500" />
+                                            <button onClick={handleDial} className="bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-lg"><Phone className="w-4 h-4" /></button>
+                                        </div>
+                                    </div>
+                                )}
+                                {(screen === 'step' || screen === 'sent') && (
+                                    <div className="flex-1 flex flex-col">
+                                        <div className="flex-1 bg-slate-900/50 rounded-xl p-4 font-mono text-xs overflow-auto">
+                                            {session.map((s, i) => <p key={i} className="text-slate-400 mb-1">&gt; {s}</p>)}
+                                            {screen === 'step' && <div className="mt-3 pt-3 border-t border-slate-700"><p className="text-emerald-400 whitespace-pre-line">{steps[step].label}</p><p className="text-slate-500 mt-2">Step {step + 1}/{steps.length}</p></div>}
+                                            {screen === 'sent' && <div className="mt-3 pt-3 border-t border-emerald-700"><p className="text-emerald-400">✓ Booking saved successfully!</p><p className="text-slate-400 mt-1">SMS with payment instructions sent.</p></div>}
+                                        </div>
+                                        {screen === 'step' && (
+                                            <div className="mt-3 flex gap-2">
+                                                <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSend()} autoFocus placeholder={steps[step].placeholder} className="flex-1 bg-slate-900 text-white text-sm px-3 py-2.5 rounded-lg border border-slate-700 focus:outline-none focus:border-emerald-500" />
+                                                <button onClick={handleSend} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 rounded-lg"><Send className="w-4 h-4" /></button>
+                                            </div>
+                                        )}
+                                        {screen === 'sent' && <button onClick={reset} className="mt-3 w-full bg-slate-700 hover:bg-slate-600 text-white py-2.5 rounded-lg text-sm">New Session</button>}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </Card>
+                </div>
+            );
+        };
+
+        // ============ TELEGRAM ============
+        const TelegramGateway = () => {
+            const { db, update } = useApp();
+            const [refInput, setRefInput] = useState('');
+            const [preview, setPreview] = useState(null);
+            const [message, setMessage] = useState(null);
+            const [chatLog, setChatLog] = useState([{ role: 'bot', text: 'Welcome to SwiftLogistics Finance Bot. Send a Reference ID and receipt image to verify payment.' }]);
+            const pendingBookings = db.bookings.filter(b => b.status === 'Pending Payment');
+
+            const handleFile = (e) => {
+                const f = e.target.files[0];
+                if (!f) return;
+                const reader = new FileReader();
+                reader.onload = ev => setPreview(ev.target.result);
+                reader.readAsDataURL(f);
+            };
+
+            const handleApprove = () => {
+                const booking = db.bookings.find(b => b.refNumber.toLowerCase() === refInput.trim().toLowerCase());
+                if (!booking) {
+                    setChatLog(prev => [...prev, { role: 'user', text: `/approve ${refInput}`, file: preview }, { role: 'bot', text: `❌ Reference "${refInput}" not found.`, type: 'error' }]);
+                    setMessage({ type: 'error', text: 'Reference ID not found' });
+                    return;
+                }
+                if (booking.status !== 'Pending Payment') {
+                    setChatLog(prev => [...prev, { role: 'user', text: `/approve ${refInput}` }, { role: 'bot', text: `⚠️ Booking already marked as "${booking.status}".`, type: 'warn' }]);
+                    return;
+                }
+                update(d => {
+                    const b = d.bookings.find(x => x.id === booking.id);
+                    b.status = 'Paid / Awaiting Assignment';
+                    b.receiptImage = preview;
                 });
+                setChatLog(prev => [...prev, { role: 'user', text: `/approve ${refInput}`, file: preview }, { role: 'bot', text: `✅ Payment for ${refInput} verified.\nName: ${booking.name}\nStatus → Paid / Awaiting Assignment`, type: 'success' }]);
+                setRefInput(''); setPreview(null);
+                setTimeout(() => setMessage(null), 3000);
+            };
 
-                const aiResponse = output[0].generated_text[1].content;
-                appendMessage(aiResponse, 'ai');
-            } catch (error) {
-                appendMessage("Sorry, an error occurred while processing.", 'ai');
-                console.error(error);
+            return (
+                <div className="max-w-5xl mx-auto p-4 grid md:grid-cols-2 gap-4">
+                    <Card className="overflow-hidden flex flex-col h-[600px]">
+                        <div className="bg-gradient-to-r from-sky-500 to-blue-600 p-4 flex items-center gap-3">
+                            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"><Shield className="w-5 h-5 text-white" /></div>
+                            <div><h3 className="font-bold text-white text-sm">SwiftLogistics Finance Bot</h3><p className="text-xs text-blue-100">@swiftlogistics_bot</p></div>
+                        </div>
+                        <div className="flex-1 overflow-auto p-4 bg-slate-100 space-y-3">
+                            {chatLog.map((m, i) => (
+                                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-line shadow-sm ${m.role === 'user' ? 'bg-blue-500 text-white' : m.type === 'success' ? 'bg-emerald-50 text-emerald-800' : m.type === 'error' ? 'bg-red-50 text-red-800' : 'bg-white text-slate-800'}`}>
+                                        {m.text}
+                                        {m.file && <img src={m.file} alt="receipt" className="mt-2 rounded-lg max-w-[200px]" />}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Card>
+                    <div className="space-y-4">
+                        <Card className="p-5">
+                            <h3 className="font-bold text-slate-800 mb-1">Agent Verification Panel</h3>
+                            <p className="text-xs text-slate-500 mb-4">Manually reconcile a customer payment</p>
+                            <div className="space-y-3">
+                                <Select label="Quick-pick pending booking" value={refInput} onChange={e => setRefInput(e.target.value)}>
+                                    <option value="">-- select --</option>
+                                    {pendingBookings.map(b => <option key={b.id} value={b.refNumber}>{b.refNumber} — {b.name} ({b.channel})</option>)}
+                                </Select>
+                                <Input label="Reference ID" value={refInput} onChange={e => setRefInput(e.target.value)} placeholder="REF-XXXXXX" />
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Receipt Screenshot</label>
+                                    <label className="border-2 border-dashed border-slate-300 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 transition">
+                                        {preview ? <img src={preview} alt="receipt" className="max-h-32 rounded-lg" /> : <><Package className="w-6 h-6 text-slate-400 mb-1" /><span className="text-xs text-slate-500">Click to upload</span></>}
+                                        <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
+                                    </label>
+                                </div>
+                                <Button variant="emerald" className="w-full" onClick={handleApprove} disabled={!refInput}><CheckCircle className="w-4 h-4" /> Approve Payment</Button>
+                                {message && <div className={`text-sm p-3 rounded-lg ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>{message.text}</div>}
+                            </div>
+                        </Card>
+                        <Card className="p-5">
+                            <h4 className="font-semibold text-sm text-slate-800 mb-3">Pending Queue ({pendingBookings.length})</h4>
+                            <div className="space-y-2 max-h-64 overflow-auto">
+                                {pendingBookings.length === 0 && <p className="text-xs text-slate-400">No pending payments.</p>}
+                                {pendingBookings.map(b => (
+                                    <button key={b.id} onClick={() => setRefInput(b.refNumber)} className="w-full text-left p-3 bg-slate-50 hover:bg-slate-100 rounded-lg text-xs flex justify-between items-center">
+                                        <div><p className="font-mono font-bold text-slate-800">{b.refNumber}</p><p className="text-slate-500">{b.name} · {b.channel}</p></div>
+                                        <ArrowRight className="w-4 h-4 text-slate-400" />
+                                    </button>
+                                ))}
+                            </div>
+                        </Card>
+                    </div>
+                </div>
+            );
+        };
+
+        // ============ DISPATCH ============
+        const DispatchPanel = () => {
+            const { db, update } = useApp();
+            const [filter, setFilter] = useState('All');
+            const [assignVehicle, setAssignVehicle] = useState({});
+            const filtered = filter === 'All' ? db.bookings : db.bookings.filter(b => b.status === filter);
+            const statuses = ['All', 'Pending Payment', 'Paid / Awaiting Assignment', 'Assigned', 'En-Route'];
+
+            const handleAssign = (bookingId) => {
+                const vId = assignVehicle[bookingId];
+                if (!vId) return;
+                update(d => { const b = d.bookings.find(x => x.id === bookingId); b.vehicleAssignedId = parseInt(vId); b.status = 'Assigned'; });
+            };
+
+            const stats = {
+                total: db.bookings.length,
+                pending: db.bookings.filter(b => b.status === 'Pending Payment').length,
+                paid: db.bookings.filter(b => b.status === 'Paid / Awaiting Assignment').length,
+                assigned: db.bookings.filter(b => b.status === 'Assigned').length,
+                enroute: db.bookings.filter(b => b.status === 'En-Route').length,
+            };
+
+            return (
+                <div className="p-4 md:p-6 max-w-7xl mx-auto">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+                        {[{ label: 'Total', value: stats.total, color: 'bg-slate-800', icon: Package },{ label: 'Pending', value: stats.pending, color: 'bg-yellow-500', icon: Clock },{ label: 'Paid', value: stats.paid, color: 'bg-emerald-600', icon: CheckCircle },{ label: 'Assigned', value: stats.assigned, color: 'bg-blue-600', icon: Truck },{ label: 'En-Route', value: stats.enroute, color: 'bg-indigo-600', icon: Navigation }].map(s => (
+                            <Card key={s.label} className="p-4">
+                                <div className="flex items-center justify-between mb-2"><div className={`w-8 h-8 ${s.color} rounded-lg flex items-center justify-center`}><s.icon className="w-4 h-4 text-white" /></div><span className="text-2xl font-bold text-slate-800">{s.value}</span></div>
+                                <p className="text-xs text-slate-500 font-medium">{s.label}</p>
+                            </Card>
+                        ))}
+                    </div>
+                    <Card>
+                        <div className="p-4 flex flex-wrap items-center gap-2 border-b border-slate-100">
+                            <Filter className="w-4 h-4 text-slate-400" /><span className="text-xs font-medium text-slate-500 mr-2">Filter:</span>
+                            {statuses.map(s => <button key={s} onClick={() => setFilter(s)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${filter === s ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{s}</button>)}
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead className="bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                        <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Ref</th>
+                                        <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Passenger</th>
+                                        <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase hidden md:table-cell">Pickup</th>
+                                        <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase hidden md:table-cell">Destination</th>
+                                        <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Channel</th>
+                                        <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Status</th>
+                                        <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Assign</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {filtered.length === 0 && <tr><td colSpan={7} className="text-center py-8 text-slate-400 text-sm">No bookings match this filter.</td></tr>}
+                                    {filtered.map(b => {
+                                        const v = b.vehicleAssignedId ? db.vehicles.find(x => x.id === b.vehicleAssignedId) : null;
+                                        return (
+                                            <tr key={b.id} className="hover:bg-slate-50">
+                                                <td className="px-4 py-3 font-mono text-xs font-bold text-slate-700">{b.refNumber}</td>
+                                                <td className="px-4 py-3"><p className="font-medium text-slate-800">{b.name}</p><p className="text-xs text-slate-500">{b.phone}</p></td>
+                                                <td className="px-4 py-3 text-xs text-slate-600 hidden md:table-cell max-w-[180px] truncate">{b.pickupText}</td>
+                                                <td className="px-4 py-3 text-xs text-slate-600 hidden md:table-cell max-w-[180px] truncate">{b.destinationText}</td>
+                                                <td className="px-4 py-3"><span className={`text-[10px] font-bold px-2 py-0.5 rounded ${b.channel === 'USSD' ? 'bg-purple-100 text-purple-700' : 'bg-sky-100 text-sky-700'}`}>{b.channel}</span></td>
+                                                <td className="px-4 py-3"><Badge status={b.status} /></td>
+                                                <td className="px-4 py-3">
+                                                    {b.status === 'Paid / Awaiting Assignment' && (
+                                                        <div className="flex gap-1">
+                                                            <select value={assignVehicle[b.id] || ''} onChange={e => setAssignVehicle({...assignVehicle, [b.id]: e.target.value})} className="text-xs border border-slate-300 rounded px-2 py-1 bg-white">
+                                                                <option value="">Vehicle...</option>
+                                                                {db.vehicles.map(v => <option key={v.id} value={v.id}>{v.plateNumber}</option>)}
+                                                            </select>
+                                                            <button onClick={() => handleAssign(b.id)} disabled={!assignVehicle[b.id]} className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white text-xs px-2 py-1 rounded">✓</button>
+                                                        </div>
+                                                    )}
+                                                    {v && <div className="text-xs"><p className="font-mono font-bold text-slate-700">{v.plateNumber}</p><p className="text-slate-500">{v.driverName}</p></div>}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Card>
+                </div>
+            );
+        };
+
+        // ============ DRIVER APP ============
+        const DriverApp = ({ setSmsLog }) => {
+            const { db, update } = useApp();
+            const [selectedVehicle, setSelectedVehicle] = useState(null);
+            const [validateRef, setValidateRef] = useState('');
+            const [validationResult, setValidationResult] = useState(null);
+            const [journeyStarted, setJourneyStarted] = useState(false);
+            const vehicle = selectedVehicle ? db.vehicles.find(v => v.id === selectedVehicle) : null;
+            const vehicleBookings = vehicle ? db.bookings.filter(b => b.vehicleAssignedId === vehicle.id) : [];
+
+            const handleValidate = () => {
+                const booking = db.bookings.find(b => b.refNumber.toLowerCase() === validateRef.trim().toLowerCase());
+                if (!booking) { setValidationResult({ type: 'error', text: 'Reference not found.' }); return; }
+                if (booking.vehicleAssignedId !== vehicle.id) { setValidationResult({ type: 'error', text: `Ticket belongs to a different vehicle.` }); return; }
+                update(d => { const b = d.bookings.find(x => x.id === booking.id); b.boarded = true; if (b.status !== 'En-Route') b.status = 'Boarded'; });
+                setValidationResult({ type: 'success', text: `✓ APPROVED — ${booking.name}`, booking });
+                setValidateRef('');
+            };
+
+            const handleStartJourney = () => {
+                if (!vehicle || journeyStarted) return;
+                const passengers = vehicleBookings.filter(b => b.boarded);
+                passengers.forEach(p => {
+                    setSmsLog(prev => [...prev, { to: p.phone, message: `Your vehicle ${vehicle.plateNumber} has started the journey! Track live: /track/${p.refNumber}`, time: new Date().toISOString() }]);
+                });
+                update(d => {
+                    vehicleBookings.forEach(b => { const x = d.bookings.find(y => y.id === b.id); if (x) x.status = 'En-Route'; });
+                    d.telemetry[vehicle.id] = { started: true, progress: 0 };
+                });
+                setJourneyStarted(true);
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress = Math.min(100, progress + 5);
+                    update(d => { if (d.telemetry[vehicle.id]) d.telemetry[vehicle.id].progress = progress; });
+                    if (progress >= 100) clearInterval(interval);
+                }, 2000);
+            };
+
+            const handlePrint = () => {
+                const rows = vehicleBookings.map(b => `<tr><td>${b.name}</td><td>${b.phone}</td><td>${b.pickupText}</td><td>${b.destinationText}</td><td>${b.refNumber}</td></tr>`).join('');
+                const html = `<html><head><title>Manifest ${vehicle.plateNumber}</title><style>body{font-family:'Courier New',monospace;padding:20px;font-size:11px;}h1{font-size:14px;text-align:center;border-bottom:2px dashed #000;padding-bottom:8px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #000;padding:4px 6px;text-align:left;font-size:10px;}th{background:#eee;}.footer{margin-top:15px;text-align:center;border-top:2px dashed #000;padding-top:8px;font-size:9px;}</style></head><body><h1>SWIFTLOGISTICS — PASSENGER MANIFEST</h1><p><b>Vehicle:</b> ${vehicle.plateNumber} &nbsp; <b>Driver:</b> ${vehicle.driverName}</p><table><thead><tr><th>Passenger Name</th><th>Phone</th><th>Pickup</th><th>Destination</th><th>Ref No.</th></tr></thead><tbody>${rows}</tbody></table><div class="footer">SwiftLogistics © ${new Date().getFullYear()}</div></body></html>`;
+                const w = window.open('', '_blank');
+                w.document.write(html); w.document.close();
+                setTimeout(() => w.print(), 400);
+            };
+
+            if (!vehicle) {
+                return (
+                    <div className="max-w-md mx-auto p-4">
+                        <Card className="p-6">
+                            <div className="text-center mb-6">
+                                <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3"><Truck className="w-8 h-8 text-blue-600" /></div>
+                                <h2 className="text-lg font-bold text-slate-800">Driver / Host Sign-In</h2>
+                                <p className="text-sm text-slate-500 mt-1">Select your vehicle to begin</p>
+                            </div>
+                            <div className="space-y-3">
+                                {db.vehicles.map(v => (
+                                    <button key={v.id} onClick={() => setSelectedVehicle(v.id)} className="w-full p-4 border border-slate-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-left flex items-center gap-3">
+                                        <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center"><Truck className="w-6 h-6 text-white" /></div>
+                                        <div className="flex-1"><p className="font-mono font-bold text-slate-800">{v.plateNumber}</p><p className="text-xs text-slate-500">Driver: {v.driverName}</p></div>
+                                        <ArrowRight className="w-4 h-4 text-slate-400" />
+                                    </button>
+                                ))}
+                            </div>
+                        </Card>
+                    </div>
+                );
             }
 
-            inputEl.disabled = false;
-            btnEl.disabled = false;
-            statusEl.innerText = "⚡ AI Ready";
-            inputEl.focus();
+            return (
+                <div className="max-w-md mx-auto p-4 space-y-4">
+                    <Card className="p-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center"><Truck className="w-6 h-6 text-white" /></div>
+                            <div className="flex-1"><p className="font-mono font-bold text-slate-800">{vehicle.plateNumber}</p><p className="text-xs text-slate-500">{vehicle.driverName}</p></div>
+                            <button onClick={() => { setSelectedVehicle(null); setJourneyStarted(false); }} className="text-xs text-slate-500 hover:text-red-600 flex items-center gap-1"><LogOut className="w-3.5 h-3.5" /> Exit</button>
+                        </div>
+                    </Card>
+                    <Card className="p-5">
+                        <h3 className="font-semibold text-sm text-slate-800 mb-1">On-Site Ticket Validation</h3>
+                        <p className="text-xs text-slate-500 mb-4">Type passenger reference number</p>
+                        <div className="flex gap-2">
+                            <input value={validateRef} onChange={e => setValidateRef(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleValidate()} placeholder="REF-XXXXXX" className="flex-1 px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                            <Button onClick={handleValidate}><Search className="w-4 h-4" /></Button>
+                        </div>
+                        {validationResult && (
+                            <div className={`mt-4 p-4 rounded-lg border-2 ${validationResult.type === 'success' ? 'bg-emerald-50 border-emerald-300' : 'bg-red-50 border-red-300'}`}>
+                                <div className="flex items-center gap-2">{validationResult.type === 'success' ? <CheckCircle className="w-5 h-5 text-emerald-600" /> : <AlertCircle className="w-5 h-5 text-red-600" />}<p className={`font-bold text-sm ${validationResult.type === 'success' ? 'text-emerald-800' : 'text-red-800'}`}>{validationResult.text}</p></div>
+                            </div>
+                        )}
+                    </Card>
+                    <Card className="p-5">
+                        <div className="flex items-center justify-between mb-3"><h3 className="font-semibold text-sm text-slate-800">Manifest</h3><span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">{vehicleBookings.filter(b => b.boarded).length}/{vehicleBookings.length}</span></div>
+                        <div className="space-y-2 max-h-60 overflow-auto">
+                            {vehicleBookings.length === 0 && <p className="text-xs text-slate-400 text-center py-3">No passengers assigned.</p>}
+                            {vehicleBookings.map(b => (
+                                <div key={b.id} className={`p-3 rounded-lg border text-xs flex items-center justify-between ${b.boarded ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
+                                    <div><p className="font-medium text-slate-800">{b.name}</p><p className="text-slate-500 font-mono">{b.refNumber}</p></div>
+                                    {b.boarded ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <Clock className="w-4 h-4 text-slate-400" />}
+                                </div>
+                            ))}
+                        </div>
+                    </Card>
+                    <div className="grid grid-cols-2 gap-3">
+                        <Button variant={journeyStarted ? 'outline' : 'emerald'} onClick={handleStartJourney} disabled={journeyStarted || vehicleBookings.filter(b => b.boarded).length === 0} className="w-full"><Play className="w-4 h-4" /> {journeyStarted ? 'Live' : 'Start'}</Button>
+                        <Button variant="dark" onClick={handlePrint} disabled={vehicleBookings.length === 0} className="w-full"><Printer className="w-4 h-4" /> Print</Button>
+                    </div>
+                </div>
+            );
+        };
+
+        // ============ SMS MONITOR ============
+        const SMSMonitor = ({ smsLog }) => (
+            <div className="max-w-3xl mx-auto p-4">
+                <Card className="p-5">
+                    <div className="flex items-center gap-2 mb-4"><MessageSquare className="w-5 h-5 text-blue-600" /><h3 className="font-bold text-slate-800">SMS Broadcast Log</h3><span className="ml-auto text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">{smsLog.length}</span></div>
+                    <div className="space-y-2 max-h-[500px] overflow-auto">
+                        {smsLog.length === 0 && <p className="text-sm text-slate-400 text-center py-8">No SMS dispatched yet.</p>}
+                        {[...smsLog].reverse().map((s, i) => (
+                            <div key={i} className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                                <div className="flex justify-between text-xs mb-1"><span className="font-mono text-slate-600">→ {s.to}</span><span className="text-slate-400">{new Date(s.time).toLocaleTimeString()}</span></div>
+                                <p className="text-sm text-slate-700">{s.message}</p>
+                            </div>
+                        ))}
+                    </div>
+                </Card>
+            </div>
+        );
+
+        // ============ MAIN APP ============
+        const NAV_ITEMS = [
+            { key: 'customer', label: 'Customer', icon: User },
+            { key: 'ussd', label: 'USSD', icon: Phone },
+            { key: 'telegram', label: 'Telegram', icon: Shield },
+            { key: 'dispatch', label: 'Dispatch', icon: Truck },
+            { key: 'driver', label: 'Driver', icon: Navigation },
+            { key: 'sms', label: 'SMS Log', icon: MessageSquare },
+        ];
+
+        function App() {
+            const dbHandle = useDB();
+            const [tab, setTab] = useState('customer');
+            const [smsLog, setSmsLog] = useState([]);
+            const [mobileNav, setMobileNav] = useState(false);
+
+            return (
+                <AppContext.Provider value={dbHandle}>
+                    <div className="min-h-screen bg-slate-100 font-sans">
+                        <header className="bg-slate-900 text-white sticky top-0 z-30 shadow-lg">
+                            <div className="px-4 py-3 flex items-center gap-3">
+                                <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center"><Truck className="w-5 h-5 text-white" /></div>
+                                <div className="flex-1"><h1 className="font-bold text-sm leading-tight">SwiftLogistics</h1><p className="text-[10px] text-slate-400">Unified Multi-Channel Platform</p></div>
+                                <div className="hidden md:flex items-center gap-1">
+                                    {NAV_ITEMS.map(item => (
+                                        <button key={item.key} onClick={() => setTab(item.key)} className={`px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5 transition ${tab === item.key ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800'}`}>
+                                            <item.icon className="w-3.5 h-3.5" /> {item.label}
+                                        </button>
+                                    ))}
+                                </div>
+                                <button onClick={() => setMobileNav(!mobileNav)} className="md:hidden p-2 text-slate-300">{mobileNav ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}</button>
+                            </div>
+                            {mobileNav && (
+                                <div className="md:hidden px-2 pb-3 space-y-1">
+                                    {NAV_ITEMS.map(item => (
+                                        <button key={item.key} onClick={() => { setTab(item.key); setMobileNav(false); }} className={`w-full px-3 py-2.5 rounded-lg text-xs font-medium flex items-center gap-2 transition ${tab === item.key ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800'}`}>
+                                            <item.icon className="w-3.5 h-3.5" /> {item.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </header>
+                        <main className="py-6">
+                            {tab === 'customer' && <CustomerApp setSmsLog={setSmsLog} />}
+                            {tab === 'ussd' && <USSDSimulator setSmsLog={setSmsLog} />}
+                            {tab === 'telegram' && <TelegramGateway />}
+                            {tab === 'dispatch' && <DispatchPanel />}
+                            {tab === 'driver' && <DriverApp setSmsLog={setSmsLog} />}
+                            {tab === 'sms' && <SMSMonitor smsLog={smsLog} />}
+                        </main>
+                        <footer className="bg-slate-900 text-slate-400 text-xs py-4 px-4 mt-8">
+                            <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-2">
+                                <p>© {new Date().getFullYear()} SwiftLogistics</p>
+                                <p className="font-mono">DB: {dbHandle.db.bookings.length} bookings · {dbHandle.db.vehicles.length} vehicles</p>
+                            </div>
+                        </footer>
+                    </div>
+                </AppContext.Provider>
+            );
         }
 
-        function appendMessage(text, sender) {
-            const chat = document.getElementById('chat');
-            const msg = document.createElement('div');
-            msg.className = `msg ${sender}`;
-            msg.innerText = text;
-            chat.appendChild(msg);
-            chat.scrollTop = chat.scrollHeight;
-        }
-
-        // Start loading the model on page load
-        initAI();
+        // Render
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
