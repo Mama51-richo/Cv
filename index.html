@@ -1,725 +1,1244 @@
+```html
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SwiftLogistics - Unified Platform</title>
+    <title>ProCV Studio - Professional CV Maker</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                        roboto: ['Roboto', 'sans-serif']
+                    },
+                    colors: {
+                        theme: {
+                            50: 'var(--theme-50)',
+                            100: 'var(--theme-100)',
+                            500: 'var(--theme-500)',
+                            600: 'var(--theme-600)',
+                            700: 'var(--theme-700)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-    </style>
-</head>
-<body>
-    <div id="root"></div>
-
-    <!-- Load app dependencies needed inside JSX scope -->
-    <script type="text/babel" data-presets="react">
-        const { useState, useEffect, createContext, useContext, Fragment } = React;
-
-        // --- Simple inline SVG icons (no external library needed) ---
-        const Icon = ({ path, className = "w-4 h-4", ...props }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
-                <path d={path} />
-            </svg>
-        );
-
-        const Icons = {
-            Truck: (p) => <Icon {...p} path="M10 17h4V5H2v12h3m9-12l1 4h6l2 3v5h-3M9 17a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm11 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0z" />,
-            MapPin: (p) => <Icon {...p} path="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z M12 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />,
-            Phone: (p) => <Icon {...p} path="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />,
-            User: (p) => <Icon {...p} path="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />,
-            Package: (p) => <Icon {...p} path="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z M3.27 6.96L12 12.01l8.73-5.05 M12 22.08V12" />,
-            CheckCircle: (p) => <Icon {...p} path="M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4L12 14.01l-3-3" />,
-            Clock: (p) => <Icon {...p} path="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 6v6l4 2" />,
-            AlertCircle: (p) => <Icon {...p} path="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 8v4 M12 16h.01" />,
-            Search: (p) => <Icon {...p} path="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.35-4.35" />,
-            Printer: (p) => <Icon {...p} path="M6 9V2h12v7 M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2 M6 14h12v8H6z" />,
-            Navigation: (p) => <Icon {...p} path="M3 11l19-9-9 19-2-8-8-2z" />,
-            Send: (p) => <Icon {...p} path="M22 2L11 13 M22 2l-7 20-4-9-9-4 20-7z" />,
-            Menu: (p) => <Icon {...p} path="M3 12h18 M3 6h18 M3 18h18" />,
-            X: (p) => <Icon {...p} path="M18 6L6 18 M6 6l12 12" />,
-            MessageSquare: (p) => <Icon {...p} path="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
-            ArrowRight: (p) => <Icon {...p} path="M5 12h14 M12 5l7 7-7 7" />,
-            Play: (p) => <Icon {...p} path="M5 3l14 9-14 9V3z" />,
-            Filter: (p) => <Icon {...p} path="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />,
-            LogOut: (p) => <Icon {...p} path="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9" />,
-            Shield: (p) => <Icon {...p} path="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
-        };
-        const { Truck, MapPin, Phone, User, Package, CheckCircle, Clock, AlertCircle, Search, Printer, Navigation, Send, Menu, X, MessageSquare, ArrowRight, Play, Filter, LogOut, Shield } = Icons;
-
-        // ============ DATABASE ============
-        const DB_KEY = 'logistics_db_v1';
-        const initDB = () => {
-            const existing = localStorage.getItem(DB_KEY);
-            if (existing) return JSON.parse(existing);
-            return {
-                users: [
-                    { id: 1, name: 'Admin Agent', phone: '+1000000001', role: 'admin' },
-                    { id: 2, name: 'James Mwangi', phone: '+254711000001', role: 'driver' },
-                    { id: 3, name: 'Peter Otieno', phone: '+254711000002', role: 'host' },
-                ],
-                vehicles: [
-                    { id: 1, plateNumber: 'KDA 001X', hostName: 'Peter Otieno', driverName: 'James Mwangi', operationalStatus: 'Active' },
-                    { id: 2, plateNumber: 'KDB 442Y', hostName: 'Mary Wanjiku', driverName: 'John Kamau', operationalStatus: 'Active' },
-                    { id: 3, plateNumber: 'KDC 789Z', hostName: 'Alice Njeri', driverName: 'David Ochieng', operationalStatus: 'Active' },
-                ],
-                bookings: [],
-                telemetry: {},
-                smsLog: [],
-                receipts: [],
-            };
-        };
-
-        const useDB = () => {
-            const [db, setDb] = useState(initDB);
-            useEffect(() => { localStorage.setItem(DB_KEY, JSON.stringify(db)); }, [db]);
-            const update = (fn) => setDb(prev => {
-                const next = JSON.parse(JSON.stringify(prev));
-                fn(next);
-                return next;
-            });
-            const generateRef = () => {
-                const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-                let s = '';
-                for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
-                return `REF-${s}`;
-            };
-            return { db, update, generateRef };
-        };
-
-        const AppContext = createContext(null);
-        const useApp = () => useContext(AppContext);
-
-        // ============ UI COMPONENTS ============
-        const Badge = ({ status }) => {
-            const styles = {
-                'Pending Payment': 'bg-yellow-100 text-yellow-800 border-yellow-300',
-                'Paid / Awaiting Assignment': 'bg-emerald-100 text-emerald-800 border-emerald-300',
-                'Paid': 'bg-emerald-100 text-emerald-800 border-emerald-300',
-                'Assigned': 'bg-blue-100 text-blue-800 border-blue-300',
-                'En-Route': 'bg-indigo-100 text-indigo-800 border-indigo-300',
-                'Boarded': 'bg-emerald-100 text-emerald-800 border-emerald-300',
-            };
-            return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles[status] || 'bg-gray-100 text-gray-800 border-gray-300'}`}>{status}</span>;
-        };
-
-        const Card = ({ children, className = '' }) => (
-            <div className={`bg-white rounded-xl shadow-sm border border-slate-200 ${className}`}>{children}</div>
-        );
-
-        const Button = ({ children, variant = 'primary', className = '', ...props }) => {
-            const variants = {
-                primary: 'bg-blue-600 hover:bg-blue-700 text-white',
-                emerald: 'bg-emerald-600 hover:bg-emerald-700 text-white',
-                dark: 'bg-slate-800 hover:bg-slate-900 text-white',
-                outline: 'border border-slate-300 hover:bg-slate-50 text-slate-700',
-                warning: 'bg-yellow-500 hover:bg-yellow-600 text-white',
-            };
-            return <button className={`px-4 py-2.5 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 ${variants[variant]} ${className}`} {...props}>{children}</button>;
-        };
-
-        const Input = ({ label, ...props }) => (
-            <div>
-                {label && <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>}
-                <input className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" {...props} />
-            </div>
-        );
-
-        const Select = ({ label, children, ...props }) => (
-            <div>
-                {label && <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>}
-                <select className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" {...props}>{children}</select>
-            </div>
-        );
-
-        // ============ CUSTOMER APP ============
-        const CustomerApp = ({ setSmsLog }) => {
-            const { db, update, generateRef } = useApp();
-            const [view, setView] = useState('book');
-            const [form, setForm] = useState({ name: '', phone: '', pickup: '', destination: '' });
-            const [submittedRef, setSubmittedRef] = useState(null);
-            const [trackRef, setTrackRef] = useState('');
-            const [trackResult, setTrackResult] = useState(null);
-            const [pickupSuggestions, setPickupSuggestions] = useState([]);
-            const [destSuggestions, setDestSuggestions] = useState([]);
-
-            const NAIROBI_PLACES = ['Jomo Kenyatta International Airport, Nairobi','Westlands Shopping Mall, Nairobi','Kenyatta Avenue, Nairobi CBD','Karen Shopping Centre, Nairobi','Two Rivers Mall, Ruaka','The Hub Karen, Nairobi','Nairobi Railway Station, CBD','Village Market, Gigiri','Yaya Centre, Kilimani','Garden City Mall, Thika Road','Nakuru Town Centre','Mombasa Moi International Airport','Kisumu Bus Terminal','Eldoret Town, Uganda Road','Machakos Country Bus Station'];
-            const filterPlaces = (q) => !q || q.length < 2 ? [] : NAIROBI_PLACES.filter(p => p.toLowerCase().includes(q.toLowerCase())).slice(0, 5);
-
-            const handleSubmit = (e) => {
-                e.preventDefault();
-                const ref = generateRef();
-                const newBooking = { id: Date.now(), refNumber: ref, name: form.name, phone: form.phone, pickupText: form.pickup, destinationText: form.destination, status: 'Pending Payment', channel: 'Web', vehicleAssignedId: null, boarded: false, timestamp: new Date().toISOString() };
-                update(d => { d.bookings.push(newBooking); });
-                setSubmittedRef(newBooking);
-                setSmsLog(prev => [...prev, { to: form.phone, message: `Dear ${form.name}, your booking ${ref} from ${form.pickup} to ${form.destination} is received. Pay via M-Pesa Paybill 400200, Acc: ${ref}.`, time: new Date().toISOString() }]);
-            };
-
-            const handleTrack = () => {
-                const booking = db.bookings.find(b => b.refNumber.toLowerCase() === trackRef.trim().toLowerCase());
-                setTrackResult(booking || 'not-found');
-            };
-
-            const viewedBooking = trackResult && trackResult !== 'not-found' ? trackResult : null;
-            const liveBooking = viewedBooking ? db.bookings.find(b => b.refNumber === viewedBooking.refNumber) : null;
-            const vehicle = liveBooking?.vehicleAssignedId ? db.vehicles.find(v => v.id === liveBooking.vehicleAssignedId) : null;
-            const telemetry = vehicle ? db.telemetry[vehicle.id] : null;
-
-            if (submittedRef) {
-                return (
-                    <div className="max-w-lg mx-auto p-4">
-                        <Card className="p-6">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center"><CheckCircle className="w-6 h-6 text-emerald-600" /></div>
-                                <div><h2 className="text-lg font-bold text-slate-800">Booking Confirmed</h2><p className="text-sm text-slate-500">Payment instructions sent via SMS</p></div>
-                            </div>
-                            <div className="bg-slate-900 rounded-lg p-4 mb-4">
-                                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Reference Number</p>
-                                <p className="text-2xl font-mono font-bold text-white">{submittedRef.refNumber}</p>
-                            </div>
-                            <div className="space-y-2 text-sm mb-4">
-                                <div className="flex justify-between py-2 border-b border-slate-100"><span className="text-slate-500">Traveler</span><span className="font-medium text-slate-800">{submittedRef.name}</span></div>
-                                <div className="flex justify-between py-2 border-b border-slate-100"><span className="text-slate-500">Pickup</span><span className="font-medium text-slate-800 text-right max-w-[60%]">{submittedRef.pickupText}</span></div>
-                                <div className="flex justify-between py-2 border-b border-slate-100"><span className="text-slate-500">Destination</span><span className="font-medium text-slate-800 text-right max-w-[60%]">{submittedRef.destinationText}</span></div>
-                                <div className="flex justify-between py-2"><span className="text-slate-500">Status</span><Badge status={submittedRef.status} /></div>
-                            </div>
-                            <Button className="w-full" onClick={() => { setTrackRef(submittedRef.refNumber); setSubmittedRef(null); setView('track'); }}>
-                                <Navigation className="w-4 h-4" /> Track This Trip
-                            </Button>
-                        </Card>
-                    </div>
-                );
-            }
-
-            if (view === 'track') {
-                return (
-                    <div className="max-w-lg mx-auto p-4">
-                        <Card className="p-6">
-                            <h2 className="text-lg font-bold text-slate-800 mb-4">Track Your Trip</h2>
-                            <div className="flex gap-2 mb-4">
-                                <input value={trackRef} onChange={e => setTrackRef(e.target.value)} placeholder="REF-XXXXXX" className="flex-1 px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                                <Button onClick={handleTrack}><Search className="w-4 h-4" /></Button>
-                            </div>
-                            {trackResult === 'not-found' && <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700 flex items-center gap-2"><AlertCircle className="w-4 h-4" /> No booking found with that reference.</div>}
-                            {liveBooking && (
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between"><span className="text-xs font-mono text-slate-500">{liveBooking.refNumber}</span><Badge status={liveBooking.status} /></div>
-                                    {vehicle && telemetry?.started && (
-                                        <div className="bg-slate-900 rounded-lg p-4">
-                                            <div className="flex items-center justify-between mb-3">
-                                                <div className="flex items-center gap-2"><div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" /><span className="text-xs text-emerald-400 font-medium">LIVE TRACKING</span></div>
-                                                <span className="text-xs text-slate-400 font-mono">{vehicle.plateNumber}</span>
-                                            </div>
-                                            <div className="relative h-40 bg-slate-800 rounded-lg overflow-hidden">
-                                                <div className="absolute inset-0 opacity-20" style={{backgroundImage: 'linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px)', backgroundSize: '20px 20px'}} />
-                                                <div className="absolute" style={{left: `${10 + telemetry.progress * 0.8}%`, top: '50%', transform: 'translate(-50%, -50%)', transition: 'left 1s linear'}}>
-                                                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center shadow-lg ring-4 ring-blue-500/30"><Truck className="w-4 h-4 text-white" /></div>
-                                                </div>
-                                            </div>
-                                            <div className="flex justify-between text-xs text-slate-400 mt-2"><span>📍 Pickup</span><span>{telemetry.progress}%</span><span>🎯 Drop-off</span></div>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </Card>
-                    </div>
-                );
-            }
-
-            return (
-                <div className="max-w-lg mx-auto p-4">
-                    <Card className="p-6">
-                        <div className="mb-6"><h2 className="text-xl font-bold text-slate-800">Book Your Journey</h2><p className="text-sm text-slate-500 mt-1">Fill in your travel details below</p></div>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <Input label="Traveler Name" required value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Enter full name" />
-                            <Input label="Phone Number" required value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder="+254 7XX XXX XXX" />
-                            <div className="relative">
-                                <Input label="Pickup Address" required value={form.pickup} onChange={e => { setForm({...form, pickup: e.target.value}); setPickupSuggestions(filterPlaces(e.target.value)); }} placeholder="Start typing location..." />
-                                {pickupSuggestions.length > 0 && (
-                                    <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-auto">
-                                        {pickupSuggestions.map(s => (<button key={s} type="button" onClick={() => { setForm({...form, pickup: s}); setPickupSuggestions([]); }} className="w-full text-left px-3.5 py-2.5 text-sm hover:bg-slate-50 flex items-center gap-2 border-b border-slate-50 last:border-0"><MapPin className="w-3.5 h-3.5 text-slate-400" /> {s}</button>))}
-                                    </div>
-                                )}
-                            </div>
-                            <div className="relative">
-                                <Input label="Destination Location" required value={form.destination} onChange={e => { setForm({...form, destination: e.target.value}); setDestSuggestions(filterPlaces(e.target.value)); }} placeholder="Start typing destination..." />
-                                {destSuggestions.length > 0 && (
-                                    <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-auto">
-                                        {destSuggestions.map(s => (<button key={s} type="button" onClick={() => { setForm({...form, destination: s}); setDestSuggestions([]); }} className="w-full text-left px-3.5 py-2.5 text-sm hover:bg-slate-50 flex items-center gap-2 border-b border-slate-50 last:border-0"><MapPin className="w-3.5 h-3.5 text-slate-400" /> {s}</button>))}
-                                    </div>
-                                )}
-                            </div>
-                            <Button type="submit" className="w-full"><Package className="w-4 h-4" /> Submit Booking</Button>
-                            <p className="text-xs text-slate-400 text-center">You'll receive an SMS with payment instructions</p>
-                        </form>
-                        <div className="mt-4 pt-4 border-t border-slate-100 text-center">
-                            <button onClick={() => setView('track')} className="text-sm text-blue-600 hover:text-blue-700 font-medium">Already booked? Track your trip →</button>
-                        </div>
-                    </Card>
-                </div>
-            );
-        };
-
-        // ============ USSD ============
-        const USSDSimulator = ({ setSmsLog }) => {
-            const { update, generateRef } = useApp();
-            const [screen, setScreen] = useState('idle');
-            const [dialed, setDialed] = useState('');
-            const [step, setStep] = useState(0);
-            const [input, setInput] = useState('');
-            const [data, setData] = useState({ name: '', phone: '', pickup: '', destination: '' });
-            const [session, setSession] = useState([]);
-            const steps = [
-                { key: 'name', label: 'Welcome to SwiftLogistics.\nEnter your Name:', placeholder: 'e.g. John Doe' },
-                { key: 'phone', label: 'Enter your Phone Number:', placeholder: '+2547XXXXXXXX' },
-                { key: 'pickup', label: 'Enter Pickup Location:', placeholder: 'e.g. Westlands' },
-                { key: 'destination', label: 'Enter Destination:', placeholder: 'e.g. Mombasa' },
-            ];
-            const handleDial = () => {
-                if (dialed.trim() === '*123#') { setScreen('step'); setStep(0); setSession(['*123#']); }
-                else { setSession(prev => [...prev, `${dialed} → Invalid shortcode`]); }
-                setDialed('');
-            };
-            const handleSend = () => {
-                if (!input.trim()) return;
-                const curStep = steps[step];
-                setSession(prev => [...prev, input]);
-                const newData = { ...data, [curStep.key]: input };
-                setData(newData);
-                setInput('');
-                if (step < steps.length - 1) setStep(step + 1);
-                else {
-                    const ref = generateRef();
-                    const newBooking = { id: Date.now(), refNumber: ref, name: newData.name, phone: newData.phone, pickupText: newData.pickup, destinationText: newData.destination, status: 'Pending Payment', channel: 'USSD', vehicleAssignedId: null, boarded: false, timestamp: new Date().toISOString() };
-                    update(d => { d.bookings.push(newBooking); });
-                    setSession(prev => [...prev, `✓ Ref: ${ref}`]);
-                    setSmsLog(prev => [...prev, { to: newData.phone, message: `SwiftLogistics: Booking ${ref} confirmed. Pay KES 1,500 via M-Pesa Paybill 400200, Acc ${ref}.`, time: new Date().toISOString() }]);
-                    setScreen('sent');
-                }
-            };
-            const reset = () => { setScreen('idle'); setStep(0); setInput(''); setData({ name: '', phone: '', pickup: '', destination: '' }); setSession([]); setDialed(''); };
-
-            return (
-                <div className="max-w-md mx-auto p-4">
-                    <Card className="overflow-hidden">
-                        <div className="bg-slate-900 p-4">
-                            <div className="flex items-center justify-between text-white/70 text-[10px] mb-2 px-2"><span>9:41</span><span>MTN · 4G ▮▮▮</span></div>
-                            <div className="bg-slate-800 rounded-2xl p-3 min-h-[400px] flex flex-col">
-                                <div className="text-center text-white/50 text-xs mb-4 font-mono">USSD GATEWAY · *123#</div>
-                                {screen === 'idle' && (
-                                    <div className="flex-1 flex flex-col">
-                                        <div className="flex-1 bg-slate-900/50 rounded-xl p-4 font-mono text-emerald-400 text-xs overflow-auto">
-                                            <p className="text-slate-500">// USSD Engine Ready</p>
-                                            <p className="mt-2">Dial *123# to start a session.</p>
-                                            {session.map((s, i) => <p key={i} className="mt-1 text-emerald-300">&gt; {s}</p>)}
-                                        </div>
-                                        <div className="mt-3 flex gap-2">
-                                            <input value={dialed} onChange={e => setDialed(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleDial()} placeholder="*123#" className="flex-1 bg-slate-900 text-white font-mono text-sm px-3 py-2.5 rounded-lg border border-slate-700 focus:outline-none focus:border-blue-500" />
-                                            <button onClick={handleDial} className="bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-lg"><Phone className="w-4 h-4" /></button>
-                                        </div>
-                                    </div>
-                                )}
-                                {(screen === 'step' || screen === 'sent') && (
-                                    <div className="flex-1 flex flex-col">
-                                        <div className="flex-1 bg-slate-900/50 rounded-xl p-4 font-mono text-xs overflow-auto">
-                                            {session.map((s, i) => <p key={i} className="text-slate-400 mb-1">&gt; {s}</p>)}
-                                            {screen === 'step' && <div className="mt-3 pt-3 border-t border-slate-700"><p className="text-emerald-400 whitespace-pre-line">{steps[step].label}</p><p className="text-slate-500 mt-2">Step {step + 1}/{steps.length}</p></div>}
-                                            {screen === 'sent' && <div className="mt-3 pt-3 border-t border-emerald-700"><p className="text-emerald-400">✓ Booking saved successfully!</p><p className="text-slate-400 mt-1">SMS with payment instructions sent.</p></div>}
-                                        </div>
-                                        {screen === 'step' && (
-                                            <div className="mt-3 flex gap-2">
-                                                <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSend()} autoFocus placeholder={steps[step].placeholder} className="flex-1 bg-slate-900 text-white text-sm px-3 py-2.5 rounded-lg border border-slate-700 focus:outline-none focus:border-emerald-500" />
-                                                <button onClick={handleSend} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 rounded-lg"><Send className="w-4 h-4" /></button>
-                                            </div>
-                                        )}
-                                        {screen === 'sent' && <button onClick={reset} className="mt-3 w-full bg-slate-700 hover:bg-slate-600 text-white py-2.5 rounded-lg text-sm">New Session</button>}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            );
-        };
-
-        // ============ TELEGRAM ============
-        const TelegramGateway = () => {
-            const { db, update } = useApp();
-            const [refInput, setRefInput] = useState('');
-            const [preview, setPreview] = useState(null);
-            const [message, setMessage] = useState(null);
-            const [chatLog, setChatLog] = useState([{ role: 'bot', text: 'Welcome to SwiftLogistics Finance Bot. Send a Reference ID and receipt image to verify payment.' }]);
-            const pendingBookings = db.bookings.filter(b => b.status === 'Pending Payment');
-
-            const handleFile = (e) => {
-                const f = e.target.files[0];
-                if (!f) return;
-                const reader = new FileReader();
-                reader.onload = ev => setPreview(ev.target.result);
-                reader.readAsDataURL(f);
-            };
-
-            const handleApprove = () => {
-                const booking = db.bookings.find(b => b.refNumber.toLowerCase() === refInput.trim().toLowerCase());
-                if (!booking) {
-                    setChatLog(prev => [...prev, { role: 'user', text: `/approve ${refInput}`, file: preview }, { role: 'bot', text: `❌ Reference "${refInput}" not found.`, type: 'error' }]);
-                    setMessage({ type: 'error', text: 'Reference ID not found' });
-                    return;
-                }
-                if (booking.status !== 'Pending Payment') {
-                    setChatLog(prev => [...prev, { role: 'user', text: `/approve ${refInput}` }, { role: 'bot', text: `⚠️ Booking already marked as "${booking.status}".`, type: 'warn' }]);
-                    return;
-                }
-                update(d => {
-                    const b = d.bookings.find(x => x.id === booking.id);
-                    b.status = 'Paid / Awaiting Assignment';
-                    b.receiptImage = preview;
-                });
-                setChatLog(prev => [...prev, { role: 'user', text: `/approve ${refInput}`, file: preview }, { role: 'bot', text: `✅ Payment for ${refInput} verified.\nName: ${booking.name}\nStatus → Paid / Awaiting Assignment`, type: 'success' }]);
-                setRefInput(''); setPreview(null);
-                setTimeout(() => setMessage(null), 3000);
-            };
-
-            return (
-                <div className="max-w-5xl mx-auto p-4 grid md:grid-cols-2 gap-4">
-                    <Card className="overflow-hidden flex flex-col h-[600px]">
-                        <div className="bg-gradient-to-r from-sky-500 to-blue-600 p-4 flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"><Shield className="w-5 h-5 text-white" /></div>
-                            <div><h3 className="font-bold text-white text-sm">SwiftLogistics Finance Bot</h3><p className="text-xs text-blue-100">@swiftlogistics_bot</p></div>
-                        </div>
-                        <div className="flex-1 overflow-auto p-4 bg-slate-100 space-y-3">
-                            {chatLog.map((m, i) => (
-                                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-line shadow-sm ${m.role === 'user' ? 'bg-blue-500 text-white' : m.type === 'success' ? 'bg-emerald-50 text-emerald-800' : m.type === 'error' ? 'bg-red-50 text-red-800' : 'bg-white text-slate-800'}`}>
-                                        {m.text}
-                                        {m.file && <img src={m.file} alt="receipt" className="mt-2 rounded-lg max-w-[200px]" />}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </Card>
-                    <div className="space-y-4">
-                        <Card className="p-5">
-                            <h3 className="font-bold text-slate-800 mb-1">Agent Verification Panel</h3>
-                            <p className="text-xs text-slate-500 mb-4">Manually reconcile a customer payment</p>
-                            <div className="space-y-3">
-                                <Select label="Quick-pick pending booking" value={refInput} onChange={e => setRefInput(e.target.value)}>
-                                    <option value="">-- select --</option>
-                                    {pendingBookings.map(b => <option key={b.id} value={b.refNumber}>{b.refNumber} — {b.name} ({b.channel})</option>)}
-                                </Select>
-                                <Input label="Reference ID" value={refInput} onChange={e => setRefInput(e.target.value)} placeholder="REF-XXXXXX" />
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Receipt Screenshot</label>
-                                    <label className="border-2 border-dashed border-slate-300 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 transition">
-                                        {preview ? <img src={preview} alt="receipt" className="max-h-32 rounded-lg" /> : <><Package className="w-6 h-6 text-slate-400 mb-1" /><span className="text-xs text-slate-500">Click to upload</span></>}
-                                        <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
-                                    </label>
-                                </div>
-                                <Button variant="emerald" className="w-full" onClick={handleApprove} disabled={!refInput}><CheckCircle className="w-4 h-4" /> Approve Payment</Button>
-                                {message && <div className={`text-sm p-3 rounded-lg ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>{message.text}</div>}
-                            </div>
-                        </Card>
-                        <Card className="p-5">
-                            <h4 className="font-semibold text-sm text-slate-800 mb-3">Pending Queue ({pendingBookings.length})</h4>
-                            <div className="space-y-2 max-h-64 overflow-auto">
-                                {pendingBookings.length === 0 && <p className="text-xs text-slate-400">No pending payments.</p>}
-                                {pendingBookings.map(b => (
-                                    <button key={b.id} onClick={() => setRefInput(b.refNumber)} className="w-full text-left p-3 bg-slate-50 hover:bg-slate-100 rounded-lg text-xs flex justify-between items-center">
-                                        <div><p className="font-mono font-bold text-slate-800">{b.refNumber}</p><p className="text-slate-500">{b.name} · {b.channel}</p></div>
-                                        <ArrowRight className="w-4 h-4 text-slate-400" />
-                                    </button>
-                                ))}
-                            </div>
-                        </Card>
-                    </div>
-                </div>
-            );
-        };
-
-        // ============ DISPATCH ============
-        const DispatchPanel = () => {
-            const { db, update } = useApp();
-            const [filter, setFilter] = useState('All');
-            const [assignVehicle, setAssignVehicle] = useState({});
-            const filtered = filter === 'All' ? db.bookings : db.bookings.filter(b => b.status === filter);
-            const statuses = ['All', 'Pending Payment', 'Paid / Awaiting Assignment', 'Assigned', 'En-Route'];
-
-            const handleAssign = (bookingId) => {
-                const vId = assignVehicle[bookingId];
-                if (!vId) return;
-                update(d => { const b = d.bookings.find(x => x.id === bookingId); b.vehicleAssignedId = parseInt(vId); b.status = 'Assigned'; });
-            };
-
-            const stats = {
-                total: db.bookings.length,
-                pending: db.bookings.filter(b => b.status === 'Pending Payment').length,
-                paid: db.bookings.filter(b => b.status === 'Paid / Awaiting Assignment').length,
-                assigned: db.bookings.filter(b => b.status === 'Assigned').length,
-                enroute: db.bookings.filter(b => b.status === 'En-Route').length,
-            };
-
-            return (
-                <div className="p-4 md:p-6 max-w-7xl mx-auto">
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-                        {[{ label: 'Total', value: stats.total, color: 'bg-slate-800', icon: Package },{ label: 'Pending', value: stats.pending, color: 'bg-yellow-500', icon: Clock },{ label: 'Paid', value: stats.paid, color: 'bg-emerald-600', icon: CheckCircle },{ label: 'Assigned', value: stats.assigned, color: 'bg-blue-600', icon: Truck },{ label: 'En-Route', value: stats.enroute, color: 'bg-indigo-600', icon: Navigation }].map(s => (
-                            <Card key={s.label} className="p-4">
-                                <div className="flex items-center justify-between mb-2"><div className={`w-8 h-8 ${s.color} rounded-lg flex items-center justify-center`}><s.icon className="w-4 h-4 text-white" /></div><span className="text-2xl font-bold text-slate-800">{s.value}</span></div>
-                                <p className="text-xs text-slate-500 font-medium">{s.label}</p>
-                            </Card>
-                        ))}
-                    </div>
-                    <Card>
-                        <div className="p-4 flex flex-wrap items-center gap-2 border-b border-slate-100">
-                            <Filter className="w-4 h-4 text-slate-400" /><span className="text-xs font-medium text-slate-500 mr-2">Filter:</span>
-                            {statuses.map(s => <button key={s} onClick={() => setFilter(s)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${filter === s ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{s}</button>)}
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead className="bg-slate-50 border-b border-slate-200">
-                                    <tr>
-                                        <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Ref</th>
-                                        <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Passenger</th>
-                                        <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase hidden md:table-cell">Pickup</th>
-                                        <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase hidden md:table-cell">Destination</th>
-                                        <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Channel</th>
-                                        <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Status</th>
-                                        <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Assign</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {filtered.length === 0 && <tr><td colSpan={7} className="text-center py-8 text-slate-400 text-sm">No bookings match this filter.</td></tr>}
-                                    {filtered.map(b => {
-                                        const v = b.vehicleAssignedId ? db.vehicles.find(x => x.id === b.vehicleAssignedId) : null;
-                                        return (
-                                            <tr key={b.id} className="hover:bg-slate-50">
-                                                <td className="px-4 py-3 font-mono text-xs font-bold text-slate-700">{b.refNumber}</td>
-                                                <td className="px-4 py-3"><p className="font-medium text-slate-800">{b.name}</p><p className="text-xs text-slate-500">{b.phone}</p></td>
-                                                <td className="px-4 py-3 text-xs text-slate-600 hidden md:table-cell max-w-[180px] truncate">{b.pickupText}</td>
-                                                <td className="px-4 py-3 text-xs text-slate-600 hidden md:table-cell max-w-[180px] truncate">{b.destinationText}</td>
-                                                <td className="px-4 py-3"><span className={`text-[10px] font-bold px-2 py-0.5 rounded ${b.channel === 'USSD' ? 'bg-purple-100 text-purple-700' : 'bg-sky-100 text-sky-700'}`}>{b.channel}</span></td>
-                                                <td className="px-4 py-3"><Badge status={b.status} /></td>
-                                                <td className="px-4 py-3">
-                                                    {b.status === 'Paid / Awaiting Assignment' && (
-                                                        <div className="flex gap-1">
-                                                            <select value={assignVehicle[b.id] || ''} onChange={e => setAssignVehicle({...assignVehicle, [b.id]: e.target.value})} className="text-xs border border-slate-300 rounded px-2 py-1 bg-white">
-                                                                <option value="">Vehicle...</option>
-                                                                {db.vehicles.map(v => <option key={v.id} value={v.id}>{v.plateNumber}</option>)}
-                                                            </select>
-                                                            <button onClick={() => handleAssign(b.id)} disabled={!assignVehicle[b.id]} className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white text-xs px-2 py-1 rounded">✓</button>
-                                                        </div>
-                                                    )}
-                                                    {v && <div className="text-xs"><p className="font-mono font-bold text-slate-700">{v.plateNumber}</p><p className="text-slate-500">{v.driverName}</p></div>}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    </Card>
-                </div>
-            );
-        };
-
-        // ============ DRIVER APP ============
-        const DriverApp = ({ setSmsLog }) => {
-            const { db, update } = useApp();
-            const [selectedVehicle, setSelectedVehicle] = useState(null);
-            const [validateRef, setValidateRef] = useState('');
-            const [validationResult, setValidationResult] = useState(null);
-            const [journeyStarted, setJourneyStarted] = useState(false);
-            const vehicle = selectedVehicle ? db.vehicles.find(v => v.id === selectedVehicle) : null;
-            const vehicleBookings = vehicle ? db.bookings.filter(b => b.vehicleAssignedId === vehicle.id) : [];
-
-            const handleValidate = () => {
-                const booking = db.bookings.find(b => b.refNumber.toLowerCase() === validateRef.trim().toLowerCase());
-                if (!booking) { setValidationResult({ type: 'error', text: 'Reference not found.' }); return; }
-                if (booking.vehicleAssignedId !== vehicle.id) { setValidationResult({ type: 'error', text: `Ticket belongs to a different vehicle.` }); return; }
-                update(d => { const b = d.bookings.find(x => x.id === booking.id); b.boarded = true; if (b.status !== 'En-Route') b.status = 'Boarded'; });
-                setValidationResult({ type: 'success', text: `✓ APPROVED — ${booking.name}`, booking });
-                setValidateRef('');
-            };
-
-            const handleStartJourney = () => {
-                if (!vehicle || journeyStarted) return;
-                const passengers = vehicleBookings.filter(b => b.boarded);
-                passengers.forEach(p => {
-                    setSmsLog(prev => [...prev, { to: p.phone, message: `Your vehicle ${vehicle.plateNumber} has started the journey! Track live: /track/${p.refNumber}`, time: new Date().toISOString() }]);
-                });
-                update(d => {
-                    vehicleBookings.forEach(b => { const x = d.bookings.find(y => y.id === b.id); if (x) x.status = 'En-Route'; });
-                    d.telemetry[vehicle.id] = { started: true, progress: 0 };
-                });
-                setJourneyStarted(true);
-                let progress = 0;
-                const interval = setInterval(() => {
-                    progress = Math.min(100, progress + 5);
-                    update(d => { if (d.telemetry[vehicle.id]) d.telemetry[vehicle.id].progress = progress; });
-                    if (progress >= 100) clearInterval(interval);
-                }, 2000);
-            };
-
-            const handlePrint = () => {
-                const rows = vehicleBookings.map(b => `<tr><td>${b.name}</td><td>${b.phone}</td><td>${b.pickupText}</td><td>${b.destinationText}</td><td>${b.refNumber}</td></tr>`).join('');
-                const html = `<html><head><title>Manifest ${vehicle.plateNumber}</title><style>body{font-family:'Courier New',monospace;padding:20px;font-size:11px;}h1{font-size:14px;text-align:center;border-bottom:2px dashed #000;padding-bottom:8px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #000;padding:4px 6px;text-align:left;font-size:10px;}th{background:#eee;}.footer{margin-top:15px;text-align:center;border-top:2px dashed #000;padding-top:8px;font-size:9px;}</style></head><body><h1>SWIFTLOGISTICS — PASSENGER MANIFEST</h1><p><b>Vehicle:</b> ${vehicle.plateNumber} &nbsp; <b>Driver:</b> ${vehicle.driverName}</p><table><thead><tr><th>Passenger Name</th><th>Phone</th><th>Pickup</th><th>Destination</th><th>Ref No.</th></tr></thead><tbody>${rows}</tbody></table><div class="footer">SwiftLogistics © ${new Date().getFullYear()}</div></body></html>`;
-                const w = window.open('', '_blank');
-                w.document.write(html); w.document.close();
-                setTimeout(() => w.print(), 400);
-            };
-
-            if (!vehicle) {
-                return (
-                    <div className="max-w-md mx-auto p-4">
-                        <Card className="p-6">
-                            <div className="text-center mb-6">
-                                <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3"><Truck className="w-8 h-8 text-blue-600" /></div>
-                                <h2 className="text-lg font-bold text-slate-800">Driver / Host Sign-In</h2>
-                                <p className="text-sm text-slate-500 mt-1">Select your vehicle to begin</p>
-                            </div>
-                            <div className="space-y-3">
-                                {db.vehicles.map(v => (
-                                    <button key={v.id} onClick={() => setSelectedVehicle(v.id)} className="w-full p-4 border border-slate-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-left flex items-center gap-3">
-                                        <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center"><Truck className="w-6 h-6 text-white" /></div>
-                                        <div className="flex-1"><p className="font-mono font-bold text-slate-800">{v.plateNumber}</p><p className="text-xs text-slate-500">Driver: {v.driverName}</p></div>
-                                        <ArrowRight className="w-4 h-4 text-slate-400" />
-                                    </button>
-                                ))}
-                            </div>
-                        </Card>
-                    </div>
-                );
-            }
-
-            return (
-                <div className="max-w-md mx-auto p-4 space-y-4">
-                    <Card className="p-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center"><Truck className="w-6 h-6 text-white" /></div>
-                            <div className="flex-1"><p className="font-mono font-bold text-slate-800">{vehicle.plateNumber}</p><p className="text-xs text-slate-500">{vehicle.driverName}</p></div>
-                            <button onClick={() => { setSelectedVehicle(null); setJourneyStarted(false); }} className="text-xs text-slate-500 hover:text-red-600 flex items-center gap-1"><LogOut className="w-3.5 h-3.5" /> Exit</button>
-                        </div>
-                    </Card>
-                    <Card className="p-5">
-                        <h3 className="font-semibold text-sm text-slate-800 mb-1">On-Site Ticket Validation</h3>
-                        <p className="text-xs text-slate-500 mb-4">Type passenger reference number</p>
-                        <div className="flex gap-2">
-                            <input value={validateRef} onChange={e => setValidateRef(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleValidate()} placeholder="REF-XXXXXX" className="flex-1 px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                            <Button onClick={handleValidate}><Search className="w-4 h-4" /></Button>
-                        </div>
-                        {validationResult && (
-                            <div className={`mt-4 p-4 rounded-lg border-2 ${validationResult.type === 'success' ? 'bg-emerald-50 border-emerald-300' : 'bg-red-50 border-red-300'}`}>
-                                <div className="flex items-center gap-2">{validationResult.type === 'success' ? <CheckCircle className="w-5 h-5 text-emerald-600" /> : <AlertCircle className="w-5 h-5 text-red-600" />}<p className={`font-bold text-sm ${validationResult.type === 'success' ? 'text-emerald-800' : 'text-red-800'}`}>{validationResult.text}</p></div>
-                            </div>
-                        )}
-                    </Card>
-                    <Card className="p-5">
-                        <div className="flex items-center justify-between mb-3"><h3 className="font-semibold text-sm text-slate-800">Manifest</h3><span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">{vehicleBookings.filter(b => b.boarded).length}/{vehicleBookings.length}</span></div>
-                        <div className="space-y-2 max-h-60 overflow-auto">
-                            {vehicleBookings.length === 0 && <p className="text-xs text-slate-400 text-center py-3">No passengers assigned.</p>}
-                            {vehicleBookings.map(b => (
-                                <div key={b.id} className={`p-3 rounded-lg border text-xs flex items-center justify-between ${b.boarded ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
-                                    <div><p className="font-medium text-slate-800">{b.name}</p><p className="text-slate-500 font-mono">{b.refNumber}</p></div>
-                                    {b.boarded ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <Clock className="w-4 h-4 text-slate-400" />}
-                                </div>
-                            ))}
-                        </div>
-                    </Card>
-                    <div className="grid grid-cols-2 gap-3">
-                        <Button variant={journeyStarted ? 'outline' : 'emerald'} onClick={handleStartJourney} disabled={journeyStarted || vehicleBookings.filter(b => b.boarded).length === 0} className="w-full"><Play className="w-4 h-4" /> {journeyStarted ? 'Live' : 'Start'}</Button>
-                        <Button variant="dark" onClick={handlePrint} disabled={vehicleBookings.length === 0} className="w-full"><Printer className="w-4 h-4" /> Print</Button>
-                    </div>
-                </div>
-            );
-        };
-
-        // ============ SMS MONITOR ============
-        const SMSMonitor = ({ smsLog }) => (
-            <div className="max-w-3xl mx-auto p-4">
-                <Card className="p-5">
-                    <div className="flex items-center gap-2 mb-4"><MessageSquare className="w-5 h-5 text-blue-600" /><h3 className="font-bold text-slate-800">SMS Broadcast Log</h3><span className="ml-auto text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">{smsLog.length}</span></div>
-                    <div className="space-y-2 max-h-[500px] overflow-auto">
-                        {smsLog.length === 0 && <p className="text-sm text-slate-400 text-center py-8">No SMS dispatched yet.</p>}
-                        {[...smsLog].reverse().map((s, i) => (
-                            <div key={i} className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                                <div className="flex justify-between text-xs mb-1"><span className="font-mono text-slate-600">→ {s.to}</span><span className="text-slate-400">{new Date(s.time).toLocaleTimeString()}</span></div>
-                                <p className="text-sm text-slate-700">{s.message}</p>
-                            </div>
-                        ))}
-                    </div>
-                </Card>
-            </div>
-        );
-
-        // ============ MAIN APP ============
-        const NAV_ITEMS = [
-            { key: 'customer', label: 'Customer', icon: User },
-            { key: 'ussd', label: 'USSD', icon: Phone },
-            { key: 'telegram', label: 'Telegram', icon: Shield },
-            { key: 'dispatch', label: 'Dispatch', icon: Truck },
-            { key: 'driver', label: 'Driver', icon: Navigation },
-            { key: 'sms', label: 'SMS Log', icon: MessageSquare },
-        ];
-
-        function App() {
-            const dbHandle = useDB();
-            const [tab, setTab] = useState('customer');
-            const [smsLog, setSmsLog] = useState([]);
-            const [mobileNav, setMobileNav] = useState(false);
-
-            return (
-                <AppContext.Provider value={dbHandle}>
-                    <div className="min-h-screen bg-slate-100 font-sans">
-                        <header className="bg-slate-900 text-white sticky top-0 z-30 shadow-lg">
-                            <div className="px-4 py-3 flex items-center gap-3">
-                                <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center"><Truck className="w-5 h-5 text-white" /></div>
-                                <div className="flex-1"><h1 className="font-bold text-sm leading-tight">SwiftLogistics</h1><p className="text-[10px] text-slate-400">Unified Multi-Channel Platform</p></div>
-                                <div className="hidden md:flex items-center gap-1">
-                                    {NAV_ITEMS.map(item => (
-                                        <button key={item.key} onClick={() => setTab(item.key)} className={`px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5 transition ${tab === item.key ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800'}`}>
-                                            <item.icon className="w-3.5 h-3.5" /> {item.label}
-                                        </button>
-                                    ))}
-                                </div>
-                                <button onClick={() => setMobileNav(!mobileNav)} className="md:hidden p-2 text-slate-300">{mobileNav ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}</button>
-                            </div>
-                            {mobileNav && (
-                                <div className="md:hidden px-2 pb-3 space-y-1">
-                                    {NAV_ITEMS.map(item => (
-                                        <button key={item.key} onClick={() => { setTab(item.key); setMobileNav(false); }} className={`w-full px-3 py-2.5 rounded-lg text-xs font-medium flex items-center gap-2 transition ${tab === item.key ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800'}`}>
-                                            <item.icon className="w-3.5 h-3.5" /> {item.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </header>
-                        <main className="py-6">
-                            {tab === 'customer' && <CustomerApp setSmsLog={setSmsLog} />}
-                            {tab === 'ussd' && <USSDSimulator setSmsLog={setSmsLog} />}
-                            {tab === 'telegram' && <TelegramGateway />}
-                            {tab === 'dispatch' && <DispatchPanel />}
-                            {tab === 'driver' && <DriverApp setSmsLog={setSmsLog} />}
-                            {tab === 'sms' && <SMSMonitor smsLog={smsLog} />}
-                        </main>
-                        <footer className="bg-slate-900 text-slate-400 text-xs py-4 px-4 mt-8">
-                            <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-2">
-                                <p>© {new Date().getFullYear()} SwiftLogistics</p>
-                                <p className="font-mono">DB: {dbHandle.db.bookings.length} bookings · {dbHandle.db.vehicles.length} vehicles</p>
-                            </div>
-                        </footer>
-                    </div>
-                </AppContext.Provider>
-            );
+        :root {
+            --theme-50: #eff6ff;
+            --theme-100: #dbeafe;
+            --theme-500: #3b82f6;
+            --theme-600: #2563eb;
+            --theme-700: #1d4ed8;
+        }
+        
+        /* A4 Page dimensions in px at 96 DPI: 794px x 1123px */
+        .a4-page {
+            width: 794px;
+            min-height: 1123px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            background: white;
+            color: #1f2937;
+            transform-origin: top center;
+            transition: transform 0.2s ease;
         }
 
-        // Render
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #preview-container, #preview-container * {
+                visibility: visible;
+            }
+            #preview-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+            }
+            .a4-page {
+                box-shadow: none;
+                margin: 0;
+                width: 100%;
+                min-height: 100vh;
+                transform: none !important;
+            }
+            @page {
+                size: A4;
+                margin: 0mm;
+            }
+        }
+
+        /* Custom scrollbar for editor */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="h-full bg-slate-900 text-slate-100 font-sans antialiased overflow-hidden flex flex-col">
+
+    <header class="bg-slate-800 border-b border-slate-700 px-4 py-3 flex flex-wrap items-center justify-between gap-4 z-20 shrink-0">
+        <div class="flex items-center space-x-3">
+            <div class="bg-blue-600 text-white p-2 rounded-lg flex items-center justify-center shadow-md">
+                <i class="fa-solid fa-file-lines text-xl"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-tight text-white flex items-center gap-2">
+                    ProCV Studio <span class="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/30">Pro</span>
+                </h1>
+                <p class="text-xs text-slate-400">Professional Resume Builder</p>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+            <!-- Template Selector -->
+            <div class="flex items-center space-x-2 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-700">
+                <span class="text-xs text-slate-400 font-medium"><i class="fa-solid fa-wand-magic-sparkles mr-1 text-blue-400"></i> Template:</span>
+                <select id="templateSelect" class="bg-transparent text-sm font-medium text-slate-200 focus:outline-none cursor-pointer">
+                    <option value="modern" class="bg-slate-800">Modern Two-Column</option>
+                    <option value="minimalist" class="bg-slate-800">Clean Minimalist</option>
+                    <option value="executive" class="bg-slate-800">Executive Classic</option>
+                </select>
+            </div>
+
+            <!-- Color Theme Selector -->
+            <div class="flex items-center space-x-2 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-700">
+                <span class="text-xs text-slate-400 font-medium"><i class="fa-solid fa-palette mr-1 text-blue-400"></i> Theme:</span>
+                <select id="themeSelect" class="bg-transparent text-sm font-medium text-slate-200 focus:outline-none cursor-pointer">
+                    <option value="blue" class="bg-slate-800">Royal Blue</option>
+                    <option value="emerald" class="bg-slate-800">Emerald Green</option>
+                    <option value="purple" class="bg-slate-800">Deep Purple</option>
+                    <option value="slate" class="bg-slate-800">Slate Charcoal</option>
+                    <option value="amber" class="bg-slate-800">Amber Gold</option>
+                </select>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-2">
+                <button id="sampleBtn" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg text-sm font-medium transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-bolt text-amber-400"></i> Sample Data
+                </button>
+                <button id="clearBtn" class="bg-slate-700 hover:bg-red-900/40 text-slate-200 hover:text-red-300 px-3 py-1.5 rounded-lg text-sm font-medium transition flex items-center gap-1.5 shadow-sm" title="Clear all fields">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+                <button id="printBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded-lg text-sm font-semibold transition flex items-center gap-2 shadow-lg shadow-blue-600/30">
+                    <i class="fa-solid fa-download"></i> Export PDF / Print
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+        
+        <!-- Left Panel: Form Editor -->
+        <div id="editor-panel" class="w-full lg:w-1/2 xl:w-5/12 bg-slate-900 border-r border-slate-800 flex flex-col h-full z-10">
+            <!-- Tabs Navigation -->
+            <div class="flex border-b border-slate-800 bg-slate-900/90 px-4 pt-2 gap-2 overflow-x-auto shrink-0">
+                <button class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition whitespace-nowrap" data-tab="personal">
+                    <i class="fa-solid fa-user"></i> Personal
+                </button>
+                <button class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap" data-tab="experience">
+                    <i class="fa-solid fa-briefcase"></i> Experience
+                </button>
+                <button class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap" data-tab="education">
+                    <i class="fa-solid fa-graduation-cap"></i> Education
+                </button>
+                <button class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap" data-tab="skills">
+                    <i class="fa-solid fa-code"></i> Skills & Projects
+                </button>
+            </div>
+
+            <!-- Form Content Container -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-6" id="form-container">
+                
+                <!-- Tab 1: Personal Info & Summary -->
+                <div class="tab-content space-y-4" id="tab-personal">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                        <h2 class="text-base font-semibold text-slate-200">Personal Information</h2>
+                        <span class="text-xs text-slate-500">Essential contact details</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Full Name</label>
+                            <input type="text" id="fullName" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition" placeholder="e.g., Alex Morgan">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Job Title / Profession</label>
+                            <input type="text" id="jobTitle" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition" placeholder="e.g., Senior Software Engineer">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Email Address</label>
+                            <input type="email" id="email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition" placeholder="e.g., alex.morgan@example.com">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Phone Number</label>
+                            <input type="text" id="phone" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition" placeholder="e.g., +1 (555) 234-5678">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Location</label>
+                            <input type="text" id="location" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition" placeholder="e.g., San Francisco, CA">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Website / Portfolio / LinkedIn</label>
+                            <input type="text" id="website" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition" placeholder="e.g., linkedin.com/in/alexmorgan">
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-xs font-medium text-slate-400">Professional Summary</label>
+                            <span class="text-[11px] text-slate-500">Brief overview of your career</span>
+                        </div>
+                        <textarea id="summary" rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition resize-none" placeholder="Write 2-3 impactful sentences highlighting your career achievements and key expertise..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Work Experience -->
+                <div class="tab-content space-y-4 hidden" id="tab-experience">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                        <div>
+                            <h2 class="text-base font-semibold text-slate-200">Work Experience</h2>
+                            <p class="text-xs text-slate-500">Add your recent professional roles</p>
+                        </div>
+                        <button id="addExperience" class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i> Add Role
+                        </button>
+                    </div>
+                    
+                    <div id="experienceList" class="space-y-4">
+                        <!-- Dynamically populated experience items -->
+                    </div>
+                </div>
+
+                <!-- Tab 3: Education -->
+                <div class="tab-content space-y-4 hidden" id="tab-education">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                        <div>
+                            <h2 class="text-base font-semibold text-slate-200">Education</h2>
+                            <p class="text-xs text-slate-500">Add your academic background</p>
+                        </div>
+                        <button id="addEducation" class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i> Add Education
+                        </button>
+                    </div>
+                    
+                    <div id="educationList" class="space-y-4">
+                        <!-- Dynamically populated education items -->
+                    </div>
+                </div>
+
+                <!-- Tab 4: Skills & Projects -->
+                <div class="tab-content space-y-6 hidden" id="tab-skills">
+                    <!-- Skills Section -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                            <div>
+                                <h2 class="text-base font-semibold text-slate-200">Skills & Expertise</h2>
+                                <p class="text-xs text-slate-500">List core competencies & technologies</p>
+                            </div>
+                            <button id="addSkill" class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus"></i> Add Skill Group
+                            </button>
+                        </div>
+                        <div id="skillsList" class="space-y-4">
+                            <!-- Dynamically populated skill groups -->
+                        </div>
+                    </div>
+
+                    <!-- Projects Section -->
+                    <div class="space-y-4 pt-4 border-t border-slate-800">
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                            <div>
+                                <h2 class="text-base font-semibold text-slate-200">Projects</h2>
+                                <p class="text-xs text-slate-500">Highlight notable personal or professional work</p>
+                            </div>
+                            <button id="addProject" class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus"></i> Add Project
+                            </button>
+                        </div>
+                        <div id="projectsList" class="space-y-4">
+                            <!-- Dynamically populated projects -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Right Panel: Live A4 Preview -->
+        <div id="preview-container" class="w-full lg:w-1/2 xl:w-7/12 bg-slate-950 flex flex-col h-full relative overflow-hidden">
+            <!-- Preview Controls Bar -->
+            <div class="bg-slate-900/80 border-b border-slate-800 px-4 py-2 flex items-center justify-between text-xs text-slate-400 z-10 shrink-0">
+                <span class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-eye text-blue-400"></i> Live A4 Preview
+                </span>
+                <div class="flex items-center gap-3">
+                    <button id="zoomOut" class="hover:text-slate-200 transition" title="Zoom Out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                    <span id="zoomLevel">100%</span>
+                    <button id="zoomIn" class="hover:text-slate-200 transition" title="Zoom In"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                    <button id="resetZoom" class="hover:text-slate-200 transition ml-2" title="Reset Zoom"><i class="fa-solid fa-rotate-right"></i></button>
+                </div>
+            </div>
+
+            <!-- Scrollable Canvas Area -->
+            <div id="canvas-scroll-area" class="flex-1 overflow-auto p-4 sm:p-8 flex justify-center items-start">
+                <div id="cvPreview" class="a4-page rounded-sm shadow-2xl relative text-slate-800 overflow-hidden">
+                    <!-- Rendered CV Content injected via JS -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="notificationModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl text-center space-y-4">
+            <div id="modalIcon" class="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-info"></i>
+            </div>
+            <div>
+                <h3 id="modalTitle" class="text-base font-semibold text-white">Notification</h3>
+                <p id="modalMessage" class="text-xs text-slate-400 mt-1">Message details go here.</p>
+            </div>
+            <button id="modalCloseBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg text-sm font-medium transition">
+                Okay
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        let cvData = {
+            personal: {
+                fullName: "Alex Morgan",
+                jobTitle: "Senior Software Engineer",
+                email: "alex.morgan@example.com",
+                phone: "+1 (555) 234-5678",
+                location: "San Francisco, CA",
+                website: "linkedin.com/in/alexmorgan",
+                summary: "Passionate and results-driven Software Engineer with over 7 years of experience designing, building, and scaling modern web applications. Specialized in full-stack JavaScript, cloud architecture, and building high-performance collaborative tools."
+            },
+            experience: [
+                {
+                    id: 1,
+                    role: "Senior Full Stack Engineer",
+                    company: "CloudScale Technologies",
+                    location: "San Francisco, CA",
+                    startDate: "Jan 2022",
+                    endDate: "Present",
+                    description: "Lead development of microservices handling over 5M daily active users. Reduced latency by 35% through query optimization and caching strategies. Mentored junior engineers and established code quality standards."
+                },
+                {
+                    id: 2,
+                    role: "Software Engineer",
+                    company: "Nexus Digital Agency",
+                    location: "San Jose, CA",
+                    startDate: "Jun 2019",
+                    endDate: "Dec 2021",
+                    description: "Developed responsive single-page applications using React and Node.js. Collaborated closely with UI/UX designers to deliver pixel-perfect client portals and e-commerce platforms."
+                }
+            ],
+            education: [
+                {
+                    id: 1,
+                    degree: "B.S. in Computer Science",
+                    institution: "University of California, Berkeley",
+                    location: "Berkeley, CA",
+                    startDate: "Aug 2015",
+                    endDate: "May 2019",
+                    details: "Graduated with Honors (GPA: 3.8/4.0). Relevant Coursework: Data Structures, Algorithms, Distributed Systems, Database Management."
+                }
+            ],
+            skills: [
+                {
+                    id: 1,
+                    category: "Frontend & Mobile",
+                    items: "React, Vue.js, TypeScript, Tailwind CSS, HTML5/CSS3, Next.js"
+                },
+                {
+                    id: 2,
+                    category: "Backend & Cloud",
+                    items: "Node.js, Express, Python, PostgreSQL, MongoDB, AWS, Docker, GraphQL"
+                },
+                {
+                    id: 3,
+                    category: "Tools & Methodologies",
+                    items: "Git, CI/CD, Agile/Scrum, Jest, Webpack, Postman"
+                }
+            ],
+            projects: [
+                {
+                    id: 1,
+                    name: "DevCollab Real-Time Editor",
+                    link: "github.com/alexmorgan/devcollab",
+                    description: "Built a collaborative browser-based code editor with live preview using WebSockets and Operational Transformation. Supported over 1,000 concurrent developer sessions."
+                },
+                {
+                    id: 2,
+                    name: "EcoTrack Analytics Dashboard",
+                    link: "ecotrack-demo.app",
+                    description: "Engineered a sustainability tracking dashboard for corporate carbon footprints using React, D3.js, and Node.js backend pipelines."
+                }
+            ],
+            template: "modern",
+            theme: "blue"
+        };
+
+        let zoomFactor = 1.0;
+
+        // Theme Color Maps
+        const themeColors = {
+            blue: {
+                50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8'
+            },
+            emerald: {
+                50: '#ecfdf5', 100: '#d1fae5', 500: '#10b981', 600: '#059669', 700: '#047857'
+            },
+            purple: {
+                50: '#f5f3ff', 100: '#ede9fe', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9'
+            },
+            slate: {
+                50: '#f8fafc', 100: '#f1f5f9', 500: '#64748b', 600: '#475569', 700: '#334155'
+            },
+            amber: {
+                50: '#fffbeb', 100: '#fef3c7', 500: '#f59e0b', 600: '#d97706', 700: '#b45309'
+            }
+        };
+
+        // Custom Modal helper (replacing alert())
+        function showModal(title, message, isSuccess = true) {
+            const modal = document.getElementById('notificationModal');
+            const titleEl = document.getElementById('modalTitle');
+            const msgEl = document.getElementById('modalMessage');
+            const iconEl = document.getElementById('modalIcon');
+            
+            titleEl.textContent = title;
+            msgEl.textContent = message;
+            
+            if(isSuccess) {
+                iconEl.className = "w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto text-xl";
+                iconEl.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else {
+                iconEl.className = "w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center mx-auto text-xl";
+                iconEl.innerHTML = '<i class="fa-solid fa-info"></i>';
+            }
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        }
+
+        document.getElementById('modalCloseBtn').addEventListener('click', () => {
+            const modal = document.getElementById('notificationModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        });
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFromLocalStorage();
+            initTabs();
+            bindFormInputs();
+            renderFormLists();
+            updateThemeCSS();
+            renderPreview();
+            setupEventListeners();
+        });
+
+        // Local Storage
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('procv_data', JSON.stringify(cvData));
+            } catch(e) {
+                console.error('Could not save to localStorage', e);
+            }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const saved = localStorage.getItem('procv_data');
+                if (saved) {
+                    cvData = JSON.parse(saved);
+                }
+            } catch(e) {
+                console.error('Could not load from localStorage', e);
+            }
+        }
+
+        // Tab Switching Logic
+        function initTabs() {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetTab = btn.getAttribute('data-tab');
+                    
+                    tabButtons.forEach(b => {
+                        b.classList.remove('border-blue-500', 'text-blue-400');
+                        b.classList.add('border-transparent', 'text-slate-400');
+                    });
+                    btn.classList.add('border-blue-500', 'text-blue-400');
+                    btn.classList.remove('border-transparent', 'text-slate-400');
+
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.add('hidden');
+                    });
+                    document.getElementById(`tab-${targetTab}`).classList.remove('hidden');
+                });
+            });
+        }
+
+        // Bind Personal Inputs
+        function bindFormInputs() {
+            const personalFields = ['fullName', 'jobTitle', 'email', 'phone', 'location', 'website', 'summary'];
+            personalFields.forEach(field => {
+                const el = document.getElementById(field);
+                if(el) {
+                    el.value = cvData.personal[field] || '';
+                    el.addEventListener('input', (e) => {
+                        cvData.personal[field] = e.target.value;
+                        saveToLocalStorage();
+                        renderPreview();
+                    });
+                }
+            });
+
+            document.getElementById('templateSelect').value = cvData.template;
+            document.getElementById('templateSelect').addEventListener('change', (e) => {
+                cvData.template = e.target.value;
+                saveToLocalStorage();
+                renderPreview();
+            });
+
+            document.getElementById('themeSelect').value = cvData.theme;
+            document.getElementById('themeSelect').addEventListener('change', (e) => {
+                cvData.theme = e.target.value;
+                updateThemeCSS();
+                saveToLocalStorage();
+                renderPreview();
+            });
+        }
+
+        function updateThemeCSS() {
+            const colors = themeColors[cvData.theme] || themeColors.blue;
+            const root = document.documentElement;
+            root.style.setProperty('--theme-50', colors[50]);
+            root.style.setProperty('--theme-100', colors[100]);
+            root.style.setProperty('--theme-500', colors[500]);
+            root.style.setProperty('--theme-600', colors[600]);
+            root.style.setProperty('--theme-700', colors[700]);
+        }
+
+        // Render Dynamic Lists in Form Editor
+        function renderFormLists() {
+            renderExperienceForm();
+            renderEducationForm();
+            renderSkillsForm();
+            renderProjectsForm();
+        }
+
+        // Experience Form Management
+        function renderExperienceForm() {
+            const container = document.getElementById('experienceList');
+            container.innerHTML = '';
+            
+            cvData.experience.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-800/60 border border-slate-700 rounded-lg p-4 space-y-3 relative group";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-blue-400">Experience #${index + 1}</span>
+                        <button type="button" class="text-slate-500 hover:text-red-400 transition remove-exp-btn" data-index="${index}">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input type="text" placeholder="Job Title" value="${item.role}" class="exp-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500" data-field="role" data-index="${index}">
+                        <input type="text" placeholder="Company Name" value="${item.company}" class="exp-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500" data-field="company" data-index="${index}">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <input type="text" placeholder="Location" value="${item.location}" class="exp-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500" data-field="location" data-index="${index}">
+                        <input type="text" placeholder="Start Date (e.g., Jan 2020)" value="${item.startDate}" class="exp-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500" data-field="startDate" data-index="${index}">
+                        <input type="text" placeholder="End Date (e.g., Present)" value="${item.endDate}" class="exp-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500" data-field="endDate" data-index="${index}">
+                    </div>
+                    <textarea placeholder="Key responsibilities and achievements..." rows="2" class="exp-input w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500 resize-none" data-field="description" data-index="${index}">${item.description}</textarea>
+                `;
+                container.appendChild(card);
+            });
+
+            // Bind listeners
+            container.querySelectorAll('.exp-input').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const idx = e.target.getAttribute('data-index');
+                    const field = e.target.getAttribute('data-field');
+                    cvData.experience[idx][field] = e.target.value;
+                    saveToLocalStorage();
+                    renderPreview();
+                });
+            });
+
+            container.querySelectorAll('.remove-exp-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = e.currentTarget.getAttribute('data-index');
+                    cvData.experience.splice(idx, 1);
+                    saveToLocalStorage();
+                    renderFormLists();
+                    renderPreview();
+                });
+            });
+        }
+
+        // Education Form Management
+        function renderEducationForm() {
+            const container = document.getElementById('educationList');
+            container.innerHTML = '';
+            
+            cvData.education.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-800/60 border border-slate-700 rounded-lg p-4 space-y-3 relative group";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-blue-400">Education #${index + 1}</span>
+                        <button type="button" class="text-slate-500 hover:text-red-400 transition remove-edu-btn" data-index="${index}">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input type="text" placeholder="Degree / Qualification" value="${item.degree}" class="edu-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500" data-field="degree" data-index="${index}">
+                        <input type="text" placeholder="Institution Name" value="${item.institution}" class="edu-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500" data-field="institution" data-index="${index}">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <input type="text" placeholder="Location" value="${item.location}" class="edu-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500" data-field="location" data-index="${index}">
+                        <input type="text" placeholder="Start Date" value="${item.startDate}" class="edu-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500" data-field="startDate" data-index="${index}">
+                        <input type="text" placeholder="End Date / Year" value="${item.endDate}" class="edu-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500" data-field="endDate" data-index="${index}">
+                    </div>
+                    <textarea placeholder="Honors, GPA, coursework..." rows="2" class="edu-input w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500 resize-none" data-field="details" data-index="${index}">${item.details}</textarea>
+                `;
+                container.appendChild(card);
+            });
+
+            container.querySelectorAll('.edu-input').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const idx = e.target.getAttribute('data-index');
+                    const field = e.target.getAttribute('data-field');
+                    cvData.education[idx][field] = e.target.value;
+                    saveToLocalStorage();
+                    renderPreview();
+                });
+            });
+
+            container.querySelectorAll('.remove-edu-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = e.currentTarget.getAttribute('data-index');
+                    cvData.education.splice(idx, 1);
+                    saveToLocalStorage();
+                    renderFormLists();
+                    renderPreview();
+                });
+            });
+        }
+
+        // Skills Form Management
+        function renderSkillsForm() {
+            const container = document.getElementById('skillsList');
+            container.innerHTML = '';
+            
+            cvData.skills.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-800/60 border border-slate-700 rounded-lg p-4 space-y-3 relative group";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-blue-400">Skill Group #${index + 1}</span>
+                        <button type="button" class="text-slate-500 hover:text-red-400 transition remove-skill-btn" data-index="${index}">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input type="text" placeholder="Category (e.g., Frontend)" value="${item.category}" class="skill-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500" data-field="category" data-index="${index}">
+                        <input type="text" placeholder="Skills (comma separated)" value="${item.items}" class="skill-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500" data-field="items" data-index="${index}">
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            container.querySelectorAll('.skill-input').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const idx = e.target.getAttribute('data-index');
+                    const field = e.target.getAttribute('data-field');
+                    cvData.skills[idx][field] = e.target.value;
+                    saveToLocalStorage();
+                    renderPreview();
+                });
+            });
+
+            container.querySelectorAll('.remove-skill-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = e.currentTarget.getAttribute('data-index');
+                    cvData.skills.splice(idx, 1);
+                    saveToLocalStorage();
+                    renderFormLists();
+                    renderPreview();
+                });
+            });
+        }
+
+        // Projects Form Management
+        function renderProjectsForm() {
+            const container = document.getElementById('projectsList');
+            container.innerHTML = '';
+            
+            cvData.projects.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-800/60 border border-slate-700 rounded-lg p-4 space-y-3 relative group";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-blue-400">Project #${index + 1}</span>
+                        <button type="button" class="text-slate-500 hover:text-red-400 transition remove-proj-btn" data-index="${index}">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input type="text" placeholder="Project Name" value="${item.name}" class="proj-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500" data-field="name" data-index="${index}">
+                        <input type="text" placeholder="Link / Repository" value="${item.link}" class="proj-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500" data-field="link" data-index="${index}">
+                    </div>
+                    <textarea placeholder="Project description and key technologies used..." rows="2" class="proj-input w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500 resize-none" data-field="description" data-index="${index}">${item.description}</textarea>
+                `;
+                container.appendChild(card);
+            });
+
+            container.querySelectorAll('.proj-input').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const idx = e.target.getAttribute('data-index');
+                    const field = e.target.getAttribute('data-field');
+                    cvData.projects[idx][field] = e.target.value;
+                    saveToLocalStorage();
+                    renderPreview();
+                });
+            });
+
+            container.querySelectorAll('.remove-proj-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = e.currentTarget.getAttribute('data-index');
+                    cvData.projects.splice(idx, 1);
+                    saveToLocalStorage();
+                    renderFormLists();
+                    renderPreview();
+                });
+            });
+        }
+
+        // Setup Add Buttons and Actions
+        function setupEventListeners() {
+            document.getElementById('addExperience').addEventListener('click', () => {
+                cvData.experience.push({
+                    id: Date.now(),
+                    role: "New Role",
+                    company: "Company Name",
+                    location: "City, State",
+                    startDate: "Month Year",
+                    endDate: "Present",
+                    description: "Describe your accomplishments here..."
+                });
+                saveToLocalStorage();
+                renderFormLists();
+                renderPreview();
+            });
+
+            document.getElementById('addEducation').addEventListener('click', () => {
+                cvData.education.push({
+                    id: Date.now(),
+                    degree: "Degree Name",
+                    institution: "University / Institution",
+                    location: "City, State",
+                    startDate: "Year",
+                    endDate: "Year",
+                    details: "Honors or GPA details..."
+                });
+                saveToLocalStorage();
+                renderFormLists();
+                renderPreview();
+            });
+
+            document.getElementById('addSkill').addEventListener('click', () => {
+                cvData.skills.push({
+                    id: Date.now(),
+                    category: "New Category",
+                    items: "Skill 1, Skill 2, Skill 3"
+                });
+                saveToLocalStorage();
+                renderFormLists();
+                renderPreview();
+            });
+
+            document.getElementById('addProject').addEventListener('click', () => {
+                cvData.projects.push({
+                    id: Date.now(),
+                    name: "Project Name",
+                    link: "github.com/username/project",
+                    description: "Brief summary of the project and impact."
+                });
+                saveToLocalStorage();
+                renderFormLists();
+                renderPreview();
+            });
+
+            // Sample Data Button
+            document.getElementById('sampleBtn').addEventListener('click', () => {
+                cvData = {
+                    personal: {
+                        fullName: "Sarah Jenkins",
+                        jobTitle: "Senior Product Designer",
+                        email: "sarah.jenkins@designstudio.io",
+                        phone: "+1 (555) 987-6543",
+                        location: "New York, NY",
+                        website: "behance.net/sarahjenkins",
+                        summary: "Creative and user-centric Product Designer with 6+ years crafting intuitive SaaS interfaces, mobile apps, and design systems. Expert in user research, wireframing, high-fidelity prototyping, and cross-functional leadership."
+                    },
+                    experience: [
+                        {
+                            id: 1,
+                            role: "Lead Product Designer",
+                            company: "Vanguard Interactive",
+                            location: "New York, NY",
+                            startDate: "Mar 2021",
+                            endDate: "Present",
+                            description: "Spearheaded the complete redesign of flagship analytics platform, increasing user retention by 28%. Managed a team of 4 product designers and built the company's first scalable design system in Figma."
+                        },
+                        {
+                            id: 2,
+                            role: "UI/UX Designer",
+                            company: "PixelCraft Agency",
+                            location: "Brooklyn, NY",
+                            startDate: "Jul 2018",
+                            endDate: "Feb 2021",
+                            description: "Designed end-to-end mobile and web experiences for over 15 Fortune 500 clients. Conducted user interviews, usability testing, and delivered high-fidelity design prototypes."
+                        }
+                    ],
+                    education: [
+                        {
+                            id: 1,
+                            degree: "B.F.A. in Interaction Design",
+                    institution: "Parsons School of Design",
+                    location: "New York, NY",
+                    startDate: "Sep 2014",
+                    endDate: "May 2018",
+                    details: "Dean's List scholar. Focus on human-computer interaction and accessible design practices."
+                        }
+                    ],
+                    skills: [
+                        {
+                            id: 1,
+                            category: "Design & Prototyping",
+                            items: "Figma, Sketch, Adobe XD, Principle, Framer, InVision"
+                        },
+                        {
+                            id: 2,
+                            category: "Research & Strategy",
+                            items: "User Interviews, Wireframing, Usability Testing, Information Architecture"
+                        },
+                        {
+                            id: 3,
+                            category: "Technical Knowledge",
+                            items: "HTML/CSS Basics, Design Systems, Agile Collaboration, Git"
+                        }
+                    ],
+                    projects: [
+                        {
+                            id: 1,
+                            name: "Aura Design System",
+                            link: "github.com/sarahjenkins/aura-ds",
+                            description: "Open-source comprehensive accessible design system adopted by 40+ independent web applications."
+                        }
+                    ],
+                    template: "modern",
+                    theme: "purple"
+                };
+
+                // Update Form inputs
+                document.getElementById('fullName').value = cvData.personal.fullName;
+                document.getElementById('jobTitle').value = cvData.personal.jobTitle;
+                document.getElementById('email').value = cvData.personal.email;
+                document.getElementById('phone').value = cvData.personal.phone;
+                document.getElementById('location').value = cvData.personal.location;
+                document.getElementById('website').value = cvData.personal.website;
+                document.getElementById('summary').value = cvData.personal.summary;
+                document.getElementById('templateSelect').value = cvData.template;
+                document.getElementById('themeSelect').value = cvData.theme;
+
+                updateThemeCSS();
+                saveToLocalStorage();
+                renderFormLists();
+                renderPreview();
+                showModal("Sample Data Loaded", "Successfully loaded sample resume details for Sarah Jenkins.");
+            });
+
+            // Clear Button
+            document.getElementById('clearBtn').addEventListener('click', () => {
+                cvData = {
+                    personal: { fullName: "", jobTitle: "", email: "", phone: "", location: "", website: "", summary: "" },
+                    experience: [],
+                    education: [],
+                    skills: [],
+                    projects: [],
+                    template: "modern",
+                    theme: "blue"
+                };
+                document.querySelectorAll('#tab-personal input, #tab-personal textarea').forEach(el => el.value = '');
+                saveToLocalStorage();
+                renderFormLists();
+                renderPreview();
+                showModal("CV Cleared", "All fields have been reset.");
+            });
+
+            // Print / Export PDF
+            document.getElementById('printBtn').addEventListener('click', () => {
+                window.print();
+            });
+
+            // Zoom Controls
+            document.getElementById('zoomIn').addEventListener('click', () => {
+                if (zoomFactor < 1.5) {
+                    zoomFactor += 0.1;
+                    applyZoom();
+                }
+            });
+
+            document.getElementById('zoomOut').addEventListener('click', () => {
+                if (zoomFactor > 0.6) {
+                    zoomFactor -= 0.1;
+                    applyZoom();
+                }
+            });
+
+            document.getElementById('resetZoom').addEventListener('click', () => {
+                zoomFactor = 1.0;
+                applyZoom();
+            });
+        }
+
+        function applyZoom() {
+            const previewEl = document.getElementById('cvPreview');
+            previewEl.style.transform = `scale(${zoomFactor})`;
+            document.getElementById('zoomLevel').textContent = `${Math.round(zoomFactor * 100)}%`;
+        }
+
+        // Live A4 Preview Renderer based on Selected Template & Theme
+        function renderPreview() {
+            const preview = document.getElementById('cvPreview');
+            const p = cvData.personal;
+            const colors = themeColors[cvData.theme] || themeColors.blue;
+            const primaryColor = colors[600];
+            const primaryLight = colors[50];
+            const primaryDark = colors[700];
+
+            let html = '';
+
+            if (cvData.template === 'modern') {
+                // Modern Two-Column Layout
+                html = `
+                    <div class="flex h-full min-h-[1123px] text-xs font-sans">
+                        <!-- Left Sidebar -->
+                        <div class="w-1/3 p-8 flex flex-col justify-between" style="background-color: ${primaryLight}; border-right: 1px solid #e2e8f0;">
+                            <div class="space-y-6">
+                                <!-- Contact Info -->
+                                <div class="space-y-3">
+                                    <h3 class="font-bold text-sm tracking-wider uppercase pb-1 border-b" style="color: ${primaryDark}; border-color: ${colors[500]}">Contact</h3>
+                                    <div class="space-y-2 text-slate-700">
+                                        ${p.email ? `<div class="flex items-center gap-2 break-all"><i class="fa-solid fa-envelope w-4 text-center" style="color: ${primaryColor}"></i><span>${p.email}</span></div>` : ''}
+                                        ${p.phone ? `<div class="flex items-center gap-2"><i class="fa-solid fa-phone w-4 text-center" style="color: ${primaryColor}"></i><span>${p.phone}</span></div>` : ''}
+                                        ${p.location ? `<div class="flex items-center gap-2"><i class="fa-solid fa-location-dot w-4 text-center" style="color: ${primaryColor}"></i><span>${p.location}</span></div>` : ''}
+                                        ${p.website ? `<div class="flex items-center gap-2 break-all"><i class="fa-solid fa-link w-4 text-center" style="color: ${primaryColor}"></i><span>${p.website}</span></div>` : ''}
+                                    </div>
+                                </div>
+
+                                <!-- Skills -->
+                                ${cvData.skills.length > 0 ? `
+                                <div class="space-y-3">
+                                    <h3 class="font-bold text-sm tracking-wider uppercase pb-1 border-b" style="color: ${primaryDark}; border-color: ${colors[500]}">Skills</h3>
+                                    <div class="space-y-3">
+                                        ${cvData.skills.map(s => `
+                                            <div>
+                                                <div class="font-semibold text-slate-800">${s.category}</div>
+                                                <div class="text-slate-600 mt-0.5">${s.items}</div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                ` : ''}
+
+                                <!-- Education -->
+                                ${cvData.education.length > 0 ? `
+                                <div class="space-y-3">
+                                    <h3 class="font-bold text-sm tracking-wider uppercase pb-1 border-b" style="color: ${primaryDark}; border-color: ${colors[500]}">Education</h3>
+                                    <div class="space-y-3">
+                                        ${cvData.education.map(e => `
+                                            <div>
+                                                <div class="font-bold text-slate-800">${e.degree}</div>
+                                                <div class="text-slate-700">${e.institution}</div>
+                                                <div class="text-slate-500 text-[11px]">${e.startDate} - ${e.endDate}</div>
+                                                ${e.details ? `<div class="text-slate-600 mt-1">${e.details}</div>` : ''}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                ` : ''}
+                            </div>
+                            <div class="text-[10px] text-slate-400 text-center pt-8">
+                                Generated with ProCV Studio
+                            </div>
+                        </div>
+
+                        <!-- Right Main Content -->
+                        <div class="w-2/3 p-10 flex flex-col justify-between bg-white">
+                            <div class="space-y-6">
+                                <!-- Header Name & Title -->
+                                <div>
+                                    <h1 class="text-3xl font-bold tracking-tight text-slate-900">${p.fullName || 'Your Name'}</h1>
+                                    <p class="text-base font-medium mt-1" style="color: ${primaryColor}">${p.jobTitle || 'Professional Title'}</p>
+                                </div>
+
+                                <!-- Summary -->
+                                ${p.summary ? `
+                                <div class="space-y-2">
+                                    <h3 class="font-bold text-sm tracking-wider uppercase pb-1 border-b text-slate-800" style="border-color: #e2e8f0;">Professional Summary</h3>
+                                    <p class="text-slate-600 leading-relaxed">${p.summary}</p>
+                                </div>
+                                ` : ''}
+
+                                <!-- Work Experience -->
+                                ${cvData.experience.length > 0 ? `
+                                <div class="space-y-3">
+                                    <h3 class="font-bold text-sm tracking-wider uppercase pb-1 border-b text-slate-800" style="border-color: #e2e8f0;">Work Experience</h3>
+                                    <div class="space-y-4">
+                                        ${cvData.experience.map(exp => `
+                                            <div class="space-y-1">
+                                                <div class="flex items-center justify-between font-bold text-slate-800">
+                                                    <span>${exp.role}</span>
+                                                    <span class="text-[11px] font-normal text-slate-500">${exp.startDate} – ${exp.endDate}</span>
+                                                </div>
+                                                <div class="text-xs font-medium" style="color: ${primaryColor}">${exp.company} ${exp.location ? `• ${exp.location}` : ''}</div>
+                                                <p class="text-slate-600 mt-1 leading-normal whitespace-pre-line">${exp.description}</p>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                ` : ''}
+
+                                <!-- Projects -->
+                                ${cvData.projects.length > 0 ? `
+                                <div class="space-y-3">
+                                    <h3 class="font-bold text-sm tracking-wider uppercase pb-1 border-b text-slate-800" style="border-color: #e2e8f0;">Projects</h3>
+                                    <div class="space-y-3">
+                                        ${cvData.projects.map(proj => `
+                                            <div class="space-y-1">
+                                                <div class="flex items-center justify-between font-bold text-slate-800">
+                                                    <span>${proj.name}</span>
+                                                    <span class="text-[11px] font-normal text-slate-500">${proj.link}</span>
+                                                </div>
+                                                <p class="text-slate-600 leading-normal">${proj.description}</p>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (cvData.template === 'minimalist') {
+                // Clean Minimalist Layout (Single Column)
+                html = `
+                    <div class="p-12 h-full min-h-[1123px] flex flex-col justify-between font-sans text-slate-800 bg-white">
+                        <div class="space-y-6">
+                            <!-- Top Header -->
+                            <div class="text-center space-y-2 pb-6 border-b border-slate-200">
+                                <h1 class="text-3xl font-light tracking-wide text-slate-900">${p.fullName || 'Your Name'}</h1>
+                                <p class="text-sm font-medium uppercase tracking-widest" style="color: ${primaryColor}">${p.jobTitle || 'Professional Title'}</p>
+                                <div class="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-500 pt-2">
+                                    ${p.email ? `<span><i class="fa-solid fa-envelope mr-1"></i>${p.email}</span>` : ''}
+                                    ${p.phone ? `<span><i class="fa-solid fa-phone mr-1"></i>${p.phone}</span>` : ''}
+                                    ${p.location ? `<span><i class="fa-solid fa-location-dot mr-1"></i>${p.location}</span>` : ''}
+                                    ${p.website ? `<span><i class="fa-solid fa-link mr-1"></i>${p.website}</span>` : ''}
+                                </div>
+                            </div>
+
+                            <!-- Summary -->
+                            ${p.summary ? `
+                            <div class="space-y-2 text-center max-w-2xl mx-auto">
+                                <p class="text-slate-600 leading-relaxed italic">"${p.summary}"</p>
+                            </div>
+                            ` : ''}
+
+                            <!-- Experience -->
+                            ${cvData.experience.length > 0 ? `
+                            <div class="space-y-4 pt-2">
+                                <h3 class="font-semibold text-xs tracking-widest uppercase text-slate-400 border-b pb-1">Experience</h3>
+                                <div class="space-y-5">
+                                    ${cvData.experience.map(exp => `
+                                        <div class="space-y-1">
+                                            <div class="flex justify-between items-baseline">
+                                                <h4 class="font-bold text-slate-900 text-sm">${exp.role} <span class="font-normal text-slate-600">at ${exp.company}</span></h4>
+                                                <span class="text-xs text-slate-500">${exp.startDate} – ${exp.endDate}</span>
+                                            </div>
+                                            <p class="text-slate-600 text-xs leading-relaxed">${exp.description}</p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            ` : ''}
+
+                            <!-- Education -->
+                            ${cvData.education.length > 0 ? `
+                            <div class="space-y-3 pt-2">
+                                <h3 class="font-semibold text-xs tracking-widest uppercase text-slate-400 border-b pb-1">Education</h3>
+                                <div class="space-y-3">
+                                    ${cvData.education.map(edu => `
+                                        <div class="flex justify-between items-baseline">
+                                            <div>
+                                                <h4 class="font-bold text-slate-900 text-sm">${edu.degree}</h4>
+                                                <p class="text-xs text-slate-600">${edu.institution} ${edu.details ? `• ${edu.details}` : ''}</p>
+                                            </div>
+                                            <span class="text-xs text-slate-500">${edu.startDate} – ${edu.endDate}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            ` : ''}
+
+                            <!-- Skills -->
+                            ${cvData.skills.length > 0 ? `
+                            <div class="space-y-3 pt-2">
+                                <h3 class="font-semibold text-xs tracking-widest uppercase text-slate-400 border-b pb-1">Skills</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    ${cvData.skills.map(s => `
+                                        <div>
+                                            <span class="font-bold text-slate-800 text-xs">${s.category}:</span>
+                                            <span class="text-slate-600 text-xs">${s.items}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div class="text-[10px] text-slate-400 text-center pt-8 border-t border-slate-100">
+                            ${p.fullName} • Resume
+                        </div>
+                    </div>
+                `;
+            } else if (cvData.template === 'executive') {
+                // Executive Classic Layout
+                html = `
+                    <div class="p-12 h-full min-h-[1123px] flex flex-col justify-between font-serif text-slate-900 bg-white">
+                        <div class="space-y-6">
+                            <!-- Executive Header -->
+                            <div class="border-b-2 pb-4" style="border-color: ${primaryColor}">
+                                <h1 class="text-3xl font-bold tracking-tight text-slate-900">${p.fullName || 'Your Name'}</h1>
+                                <div class="flex flex-wrap items-center justify-between mt-2 font-sans text-xs text-slate-600">
+                                    <span class="font-semibold uppercase tracking-wider" style="color: ${primaryColor}">${p.jobTitle || 'Executive Title'}</span>
+                                    <div class="flex items-center gap-4">
+                                        ${p.email ? `<span>${p.email}</span>` : ''}
+                                        ${p.phone ? `<span>${p.phone}</span>` : ''}
+                                        ${p.location ? `<span>${p.location}</span>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Summary -->
+                            ${p.summary ? `
+                            <div class="space-y-2 font-sans">
+                                <h3 class="font-bold text-xs tracking-widest uppercase pb-1 border-b border-slate-300" style="color: ${primaryDark}">Executive Summary</h3>
+                                <p class="text-slate-700 leading-relaxed text-xs">${p.summary}</p>
+                            </div>
+                            ` : ''}
+
+                            <!-- Experience -->
+                            ${cvData.experience.length > 0 ? `
+                            <div class="space-y-4 font-sans">
+                                <h3 class="font-bold text-xs tracking-widest uppercase pb-1 border-b border-slate-300" style="color: ${primaryDark}">Professional Experience</h3>
+                                <div class="space-y-4">
+                                    ${cvData.experience.map(exp => `
+                                        <div class="space-y-1">
+                                            <div class="flex justify-between items-baseline font-bold text-slate-900 text-xs">
+                                                <span>${exp.role} — <span style="color: ${primaryColor}">${exp.company}</span></span>
+                                                <span class="text-slate-500 font-normal">${exp.startDate} – ${exp.endDate}</span>
+                                            </div>
+                                            <p class="text-slate-700 text-xs leading-normal">${exp.description}</p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            ` : ''}
+
+                            <!-- Education -->
+                            ${cvData.education.length > 0 ? `
+                            <div class="space-y-3 font-sans">
+                                <h3 class="font-bold text-xs tracking-widest uppercase pb-1 border-b border-slate-300" style="color: ${primaryDark}">Education</h3>
+                                <div class="space-y-2">
+                                    ${cvData.education.map(edu => `
+                                        <div class="flex justify-between items-baseline text-xs">
+                                            <div>
+                                                <span class="font-bold text-slate-900">${edu.degree}</span>, 
+                                                <span class="text-slate-700">${edu.institution}</span>
+                                            </div>
+                                            <span class="text-slate-500">${edu.startDate} – ${edu.endDate}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            ` : ''}
+
+                            <!-- Skills -->
+                            ${cvData.skills.length > 0 ? `
+                            <div class="space-y-2 font-sans">
+                                <h3 class="font-bold text-xs tracking-widest uppercase pb-1 border-b border-slate-300" style="color: ${primaryDark}">Core Competencies</h3>
+                                <div class="space-y-1 text-xs">
+                                    ${cvData.skills.map(s => `
+                                        <div><span class="font-bold text-slate-900">${s.category}:</span> <span class="text-slate-700">${s.items}</span></div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+
+                        <div class="text-[10px] text-slate-400 text-center pt-8 border-t border-slate-200 font-sans">
+                            ${p.fullName} • Confidential CV
+                        </div>
+                    </div>
+                `;
+            }
+
+            preview.innerHTML = html;
+        }
     </script>
 </body>
 </html>
+```
