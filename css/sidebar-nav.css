@@ -1,0 +1,249 @@
+/* ===== Sidebar Nav Drawer — neumorphic, adapted to Libra CareerForge (Navy / Gold) ===== */
+
+/* ---- Backdrop + drawer shell ---- */
+.sn3n-backdrop {
+    position: fixed; inset: 0; z-index: 110;
+    background: rgba(11, 31, 58, 0.45);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.sn3n-backdrop.open { opacity: 1; pointer-events: auto; }
+
+.sn3n-drawer {
+    position: fixed; left: 0; top: 0; bottom: 0; z-index: 120;
+    transform: translateX(-115%);
+    transition: transform 0.38s cubic-bezier(.6, .02, .1, 1);
+    display: flex; align-items: center;
+    padding: calc(var(--header-h) + env(safe-area-inset-top) + 16px) 0
+             calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px);
+}
+.sn3n-drawer.open { transform: translateX(0); }
+
+/* ---- Palette (single source — edit here to recolour) ---- */
+.sn3n-section {
+    /* soft neumorphic surface, navy-tinted to match the app */
+    --sn3n-surface: #EDF1F7;
+    --sn3n-surface-2: #E2E7F0;
+    --sn3n-light: rgba(255, 255, 255, 0.92);
+    --sn3n-dark: rgba(120, 138, 170, 0.46);
+    --sn3n-icon: #64748b;                 /* inactive icon — app --text-light */
+    --sn3n-text: #172033;                 /* panel + label text — app --text */
+
+    /* active = GOLD (Libra CareerForge accent) */
+    --sn3n-gold-1: #f0d989;
+    --sn3n-gold-2: #D4A72C;               /* app --accent */
+    --sn3n-gold-ink: #0B1F3A;             /* navy icon/label on gold — WCAG AA on gold */
+    --sn3n-gold-glow: rgba(212, 167, 44, 0.36);
+
+    /* dark circle = NAVY (app --primary) */
+    --sn3n-dark-btn: #0B1F3A;
+    --sn3n-dark-btn-2: #1a3a5c;
+    --sn3n-dark-ink: #ffffff;
+
+    --sn3n-btn: 42px;                       /* icon button size (fixed — no magnify) */
+
+    container: sn3n-root / inline-size;
+    position: relative; display: block;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    isolation: isolate;
+    overflow: visible;
+    background: transparent;
+}
+
+/* ---- Dark mode ---- */
+[data-theme="dark"] .sn3n-section {
+    --sn3n-surface: #13284a;               /* app --card-bg (dark) */
+    --sn3n-surface-2: #0e1f3a;
+    --sn3n-light: rgba(255, 255, 255, 0.07);
+    --sn3n-dark: rgba(0, 0, 0, 0.42);
+    --sn3n-icon: #94a3b8;
+    --sn3n-text: #E2E8F0;
+
+    --sn3n-gold-1: #D4A72C;
+    --sn3n-gold-2: #b8901f;
+    --sn3n-gold-ink: #0B1F3A;
+    --sn3n-gold-glow: rgba(212, 167, 44, 0.3);
+
+    --sn3n-dark-btn: #D4A72C;              /* gold circle on dark surface for contrast */
+    --sn3n-dark-btn-2: #b8901f;
+    --sn3n-dark-ink: #0B1F3A;
+}
+
+/* ---- Stage: rail sits left, vertically centred ---- */
+.sn3n-stage {
+    position: relative; z-index: 1;
+    display: flex; align-items: center; justify-content: flex-start;
+    padding: 0 0 0 14px;
+}
+
+/* ---- The rail: soft panel that MORPHS wider when a submenu opens ---- */
+.sn3n-rail {
+    display: flex; flex-direction: row; align-items: stretch;
+    background: var(--sn3n-surface);
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow:
+        0 14px 32px rgba(11, 31, 58, 0.22),
+        0 2px 6px rgba(11, 31, 58, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    transition: border-radius 0.38s cubic-bezier(.6, .02, .1, 1);
+}
+
+/* the thin icon column */
+.sn3n-bar {
+    flex: 0 0 auto;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 8px; padding: 9px;
+}
+
+.sn3n-group {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+
+/* engraved (inset) group separator */
+.sn3n-divider {
+    width: 26px; height: 3px; margin: 7px 0;
+    border-radius: 3px; background: var(--sn3n-surface);
+    box-shadow:
+        inset 1px 1px 2px var(--sn3n-dark),
+        inset -1px -1px 2px var(--sn3n-light);
+}
+
+.sn3n-item { position: relative; }
+
+/* ---- Icon buttons: soft + flat raised, press IN (deboss) on hover/active ---- */
+.sn3n-btn {
+    appearance: none; border: 0; margin: 0; padding: 0;
+    width: var(--sn3n-btn); height: var(--sn3n-btn);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(145deg, var(--sn3n-surface), var(--sn3n-surface-2));
+    color: var(--sn3n-icon);
+    cursor: pointer; outline: none;
+    box-shadow:
+        -3px -3px 6px var(--sn3n-light),
+         3px  3px 6px var(--sn3n-dark);
+    transition: box-shadow 0.22s ease, color 0.22s ease, background 0.22s ease;
+}
+.sn3n-btn:hover,
+.sn3n-btn:focus-visible {
+    box-shadow:
+        inset 2px 2px 5px var(--sn3n-dark),
+        inset -2px -2px 5px var(--sn3n-light);
+}
+.sn3n-btn:focus-visible {
+    box-shadow:
+        0 0 0 3px var(--sn3n-gold-glow),
+        inset 2px 2px 5px var(--sn3n-dark),
+        inset -2px -2px 5px var(--sn3n-light);
+}
+
+/* icon sizing — FontAwesome */
+.sn3n-icon { display: flex; align-items: center; justify-content: center; }
+.sn3n-icon i { font-size: 1.05rem; line-height: 1; }
+
+/* active item: gold surface, navy icon, pressed-in */
+.sn3n-btn[aria-current="page"] { color: var(--sn3n-gold-ink); }
+.sn3n-btn[aria-current="page"] {
+    background: linear-gradient(145deg, var(--sn3n-gold-1), var(--sn3n-gold-2));
+    box-shadow:
+        inset 2px 2px 5px rgba(120, 100, 30, 0.40),
+        inset -2px -2px 5px rgba(255, 255, 255, 0.55),
+        0 0 12px var(--sn3n-gold-glow);
+}
+
+/* ---- Brand tile: dark navy circle in a soft socket ---- */
+.sn3n-brand-seat {
+    width: var(--sn3n-btn); height: var(--sn3n-btn);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow:
+        inset 2px 2px 4px var(--sn3n-dark),
+        inset -2px -2px 4px var(--sn3n-light);
+}
+.sn3n-brand-btn {
+    width: 76%; height: 76%; border-radius: 50%; border: 0; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(120% 120% at 35% 30%, var(--sn3n-dark-btn), var(--sn3n-dark-btn-2));
+    color: var(--sn3n-dark-ink); cursor: pointer;
+    box-shadow:
+        -2px -2px 4px rgba(255, 255, 255, 0.55),
+         2px  2px 5px rgba(60, 80, 120, 0.5);
+}
+/* logo mark — symbol spins while the brand is hovered */
+.sn3n-brand-btn .sn3n-logo {
+    display: flex; align-items: center; justify-content: center;
+    transform-origin: center;
+}
+.sn3n-brand-btn .sn3n-logo i { font-size: 1rem; }
+.sn3n-brand-btn:hover .sn3n-logo { animation: sn3n-logo-spin 1.4s linear infinite; }
+@keyframes sn3n-logo-spin { to { transform: rotate(360deg); } }
+
+/* ---- The morph panel (submenu) ---- */
+.sn3n-panel {
+    flex: 0 0 auto;
+    width: 0; overflow: hidden;
+    transition: width 0.38s cubic-bezier(.6, .02, .1, 1);
+}
+.sn3n-rail[data-open] .sn3n-panel { width: 214px; }
+.sn3n-panel-inner {
+    width: 214px; box-sizing: border-box;
+    padding: 16px 16px 18px 14px;
+    display: flex; flex-direction: column; gap: 12px;
+    box-shadow: inset 5px 0 8px -6px var(--sn3n-dark);
+    opacity: 0; transform: translateX(6px);
+    transition: opacity 0.28s ease 0.06s, transform 0.3s ease 0.06s;
+}
+.sn3n-rail[data-open] .sn3n-panel-inner { opacity: 1; transform: none; }
+
+.sn3n-panel-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.sn3n-panel-title {
+    font-size: 14px; font-weight: 600; color: var(--sn3n-text); letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+/* dark close button — collapses the submenu */
+.sn3n-close {
+    flex: 0 0 auto;
+    width: 30px; height: 30px; border-radius: 50%; border: 0; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(120% 120% at 35% 30%, var(--sn3n-dark-btn), var(--sn3n-dark-btn-2));
+    color: var(--sn3n-dark-ink); cursor: pointer;
+    box-shadow: -2px -2px 4px rgba(255, 255, 255, 0.55), 2px 2px 5px rgba(60, 80, 120, 0.5);
+    transition: box-shadow 0.2s ease;
+}
+.sn3n-close:hover, .sn3n-close:focus-visible {
+    box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.4), inset -1px -1px 3px rgba(255, 255, 255, 0.15);
+    outline: none;
+}
+.sn3n-close svg { width: 14px; height: 14px; }
+
+.sn3n-sub { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.sn3n-sub-btn {
+    width: 100%; text-align: left; border: 0; cursor: pointer;
+    padding: 10px 13px; border-radius: 12px;
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    color: var(--sn3n-text);
+    background: linear-gradient(145deg, var(--sn3n-surface), var(--sn3n-surface-2));
+    box-shadow: -3px -3px 6px var(--sn3n-light), 3px 3px 6px var(--sn3n-dark);
+    transition: box-shadow 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+.sn3n-sub-btn:hover, .sn3n-sub-btn:focus-visible {
+    box-shadow: inset 2px 2px 5px var(--sn3n-dark), inset -2px -2px 5px var(--sn3n-light);
+    outline: none;
+}
+.sn3n-sub-btn[aria-current="true"] {
+    color: var(--sn3n-gold-ink);
+    background: linear-gradient(145deg, var(--sn3n-gold-1), var(--sn3n-gold-2));
+    box-shadow:
+        inset 2px 2px 5px rgba(120, 100, 30, 0.38),
+        inset -2px -2px 5px rgba(255, 255, 255, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sn3n-rail, .sn3n-panel, .sn3n-panel-inner, .sn3n-btn,
+    .sn3n-drawer, .sn3n-backdrop { transition: none; }
+    .sn3n-brand-btn:hover .sn3n-logo { animation: none; }
+}

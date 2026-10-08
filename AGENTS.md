@@ -18,5 +18,14 @@ ProCV Studio — a single-page static CV maker app. The entire app is one `index
 - No secrets required.
 - Health check: `wget --spider http://localhost:80/`
 
+## Files
+- `index.html` — app shell (header, bottom nav, sidebar drawer markup, modals).
+- `css/style.css` — main design system (Navy/Gold tokens, components).
+- `css/sidebar-nav.css` — neumorphic sidebar drawer (adapted sn3n component).
+- `js/app.js` — routing, dashboard, profile, settings, Libra AI.
+- `js/sidebar-nav.js` — sidebar drawer logic (morphing submenus, route sync).
+- `js/storage.js`, `js/cv.js`, `js/job-analyzer.js`, `js/scoring.js`, `js/applications.js`, `js/interview.js`, `js/export.js` — domain modules.
+
 ## Editing
 - Edit `index.html` directly; changes appear on reload (no live-reload dev server, so call `reload_preview` after edits).
+- New CSS/JS in `css/` and `js/` are bind-mounted into nginx — no rebuild needed, just `reload_preview`.
